@@ -55,5 +55,5 @@ coll = COLLECT(
     strip=False,  # 是否剥离调试信息
     upx=True,  # 是否使用 UPX 压缩
     upx_exclude=[],  # 排除 UPX 压缩的文件
-    name='PDFMaster',  # 输出目录名称
+    name='PDFMaster_Windows_Linux',  # 输出目录名称
 )
