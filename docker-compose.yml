@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  pdfmaster:
+    image: pdfmaster
+    ports:
+      - "8080:8080"
+    environment:
+      - DISPLAY=:99
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    tty: true
