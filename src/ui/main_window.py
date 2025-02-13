@@ -1,7 +1,3 @@
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))  # Add project root to path
-
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
     QLabel, QFileDialog, QMessageBox, QProgressBar, QTabWidget, QSpinBox,
@@ -10,7 +6,7 @@ from PyQt6.QtWidgets import (
 import fitz # type: ignore
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
-from src.core.pdf_processor import PDFProcessor
+from ..core.pdf_processor import PDFProcessor
 
 class MainWindow(QMainWindow):
     def __init__(self):
