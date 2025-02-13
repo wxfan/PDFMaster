@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
     QLabel, QFileDialog, QMessageBox, QProgressBar, QTabWidget, QSpinBox,
-    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter
+    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter, QProgressDialog
 )
+import fitz
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
 from src.core import pdf_processor
