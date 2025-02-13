@@ -215,15 +215,29 @@ class MainWindow(QMainWindow):
         if not output_dir:
             return
 
+        # 创建进度对话框
+        progress_dialog = QProgressDialog("正在拆分文件...", "取消", 0, 100, self)
+        progress_dialog.setWindowTitle("处理进度")
+        progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        progress_dialog.setAutoClose(True)
+
+        def update_progress(value):
+            progress_dialog.setValue(int(value * 100))
+            if progress_dialog.wasCanceled():
+                raise Exception("用户取消操作")
+
         # 执行拆分
         try:
             if self.split_mode_single.isChecked():
-                pdf_processor.split_pdf(input_path, output_dir, mode="single")
+                pdf_processor.split_pdf(input_path, output_dir, mode="single", progress_callback=update_progress)
+                with fitz.open(input_path) as doc:
+                    total_pages = len(doc)
+                QMessageBox.information(self, "成功", f"文件拆分完成！共输出了 {total_pages} 个文件。")
             elif self.split_mode_range.isChecked():
                 start = self.split_range_start.value()
                 end = self.split_range_end.value()
                 pdf_processor.split_pdf(input_path, output_dir, mode="range", page_range=(start, end))
-            QMessageBox.information(self, "成功", "文件拆分完成！")
+                QMessageBox.information(self, "成功", f"文件拆分完成！输出了 {end - start + 1} 个页面。")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"拆分失败: {str(e)}")
 
