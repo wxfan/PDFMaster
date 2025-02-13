@@ -8,3 +8,15 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
     tty: true
+version: '3'
+
+services:
+  pdfmaster:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DISPLAY=:0
+    volumes:
+      - ./src:/app/src
+    entrypoint: ["python", "-m", "src.main"]
