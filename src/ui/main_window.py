@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
 import fitz # type: ignore
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
-from ..core.pdf_processor import PDFProcessor
+from src.core.pdf_processor import PDFProcessor
 
 class MainWindow(QMainWindow):
     def __init__(self):
