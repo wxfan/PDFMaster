@@ -1,7 +1,8 @@
-import fitz  # type: ignore
 from pathlib import Path
+import fitz  # type: ignore
 
-class pdf_processor:    
+class PDFProcessor:
+    @staticmethod
     def merge_pdfs(file_list, output_path, keep_bookmarks=True):
         """
         合并多个 PDF 文件
@@ -20,6 +21,7 @@ class pdf_processor:
         # 保存合并后的文档
         merged_doc.save(output_path)
         merged_doc.close()
+    @staticmethod
     def split_pdf(input_path, output_dir, mode="single", page_range=None, progress_callback=None):
         """
         拆分 PDF 文件
@@ -52,6 +54,7 @@ class pdf_processor:
                 output_path = output_dir / f"pages_{start}-{end}.pdf"
                 new_doc.save(output_path)
                 new_doc.close()
+    @staticmethod
     def extract_pages(input_path, output_path, page_range):
         """
         提取指定页码范围

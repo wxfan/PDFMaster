@@ -1,3 +1,7 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))  # Add project root to path
+
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
     QLabel, QFileDialog, QMessageBox, QProgressBar, QTabWidget, QSpinBox,
@@ -6,7 +10,7 @@ from PyQt6.QtWidgets import (
 import fitz
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
-from src.core import pdf_processor
+from src.core.pdf_processor import PDFProcessor
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -197,7 +201,7 @@ class MainWindow(QMainWindow):
 
         # 执行合并
         try:
-            pdf_processor.merge_pdfs(file_list, output_path, self.merge_bookmarks.isChecked())
+            PDFProcessor.merge_pdfs(file_list, output_path, self.merge_bookmarks.isChecked())
             QMessageBox.information(self, "成功", "文件合并完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"合并失败: {str(e)}")
@@ -230,14 +234,14 @@ class MainWindow(QMainWindow):
         # 执行拆分
         try:
             if self.split_mode_single.isChecked():
-                pdf_processor.split_pdf(input_path, output_dir, mode="single", progress_callback=update_progress)
+                PDFProcessor.split_pdf(input_path, output_dir, mode="single", progress_callback=update_progress)
                 with fitz.open(input_path) as doc:
                     total_pages = len(doc)
                 QMessageBox.information(self, "成功", f"文件拆分完成！共输出了 {total_pages} 个文件。")
             elif self.split_mode_range.isChecked():
                 start = self.split_range_start.value()
                 end = self.split_range_end.value()
-                pdf_processor.split_pdf(input_path, output_dir, mode="range", page_range=(start, end))
+                PDFProcessor.split_pdf(input_path, output_dir, mode="range", page_range=(start, end))
                 QMessageBox.information(self, "成功", f"文件拆分完成！输出了 {end - start + 1} 个页面。")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"拆分失败: {str(e)}")
@@ -261,7 +265,7 @@ class MainWindow(QMainWindow):
         # 执行提取
         try:
             page_range = self.extract_pages.text()
-            pdf_processor.extract_pages(input_path, output_path, page_range)
+            PDFProcessor.extract_pages(input_path, output_path, page_range)
             QMessageBox.information(self, "成功", "页面提取完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
