@@ -71,44 +71,12 @@ class MainWindow(QMainWindow):
         # 文件列表
         self.file_list = QListWidget()
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        self.file_list.itemSelectionChanged.connect(self._update_preview)  # 添加选择监听
+        self.file_list.itemSelectionChanged.connect(self._update_preview)
         layout.addWidget(self.file_list)
-
-        # 操作按钮
-        btn_add = QPushButton("添加文件")
-        btn_add.clicked.connect(self._add_files)
-        btn_remove = QPushButton("移除选中")
-        btn_remove.clicked.connect(self._remove_files)
-        btn_clear = QPushButton("清空列表")
-        btn_clear.clicked.connect(self.file_list.clear)
-
-        # 按钮布局
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(btn_add)
-        btn_layout.addWidget(btn_remove)
-        btn_layout.addWidget(btn_clear)
-        layout.addLayout(btn_layout)
 
         panel.setLayout(layout)
         return panel
 
-    def _create_function_panel(self):
-        """创建功能面板"""
-        panel = QTabWidget()
-
-        # 合并功能页
-        merge_tab = self._create_merge_tab()
-        panel.addTab(merge_tab, "合并 PDF")
-
-        # 拆分功能页
-        split_tab = self._create_split_tab()
-        panel.addTab(split_tab, "拆分 PDF")
-
-        # 提取功能页
-        extract_tab = self._create_extract_tab()
-        panel.addTab(extract_tab, "提取页面")
-
-        return panel
 
     def _create_merge_tab(self):
         """创建合并功能页"""
