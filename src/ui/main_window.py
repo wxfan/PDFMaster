@@ -1,8 +1,11 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
     QLabel, QFileDialog, QMessageBox, QProgressBar, QTabWidget, QSpinBox,
-    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter, QProgressDialog
+    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter, QProgressDialog,
+    QScrollArea
 )
+from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtCore import Qt
 import fitz # type: ignore
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
@@ -27,8 +30,30 @@ class MainWindow(QMainWindow):
         main_layout = QHBoxLayout()
         main_widget.setLayout(main_layout)
 
-        # 左侧文件列表区域
-        left_panel = self._create_file_list_panel()
+        # 左侧面板
+        left_panel = QWidget()
+        left_layout = QVBoxLayout()
+        left_panel.setLayout(left_layout)
+
+        # 文件预览区域
+        preview_group = QGroupBox("文件预览")
+        preview_layout = QVBoxLayout()
+        self.preview_widget = QLabel("请选择 PDF 文件进行预览")
+        self.preview_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.preview_widget.setMinimumSize(200, 300)
+        
+        # 添加滚动区域
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(self.preview_widget)
+        scroll_area.setWidgetResizable(True)
+        preview_layout.addWidget(scroll_area)
+        preview_group.setLayout(preview_layout)
+        left_layout.addWidget(preview_group)
+
+        # 文件列表区域
+        file_list_panel = self._create_file_list_panel()
+        left_layout.addWidget(file_list_panel)
+
         main_layout.addWidget(left_panel, stretch=1)
 
         # 右侧功能区域
@@ -46,6 +71,7 @@ class MainWindow(QMainWindow):
         # 文件列表
         self.file_list = QListWidget()
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        self.file_list.itemSelectionChanged.connect(self._update_preview)  # 添加选择监听
         layout.addWidget(self.file_list)
 
         # 操作按钮
@@ -166,6 +192,43 @@ class MainWindow(QMainWindow):
         tab.setLayout(layout)
         return tab
 
+    def _update_preview(self):
+        """更新 PDF 预览"""
+        # 获取当前选中的文件
+        selected_items = self.file_list.selectedItems()
+        if selected_items:
+            file_path = selected_items[0].text()
+            try:
+                # 打开 PDF 文件
+                with fitz.open(file_path) as doc:
+                    # 获取第一页
+                    page = doc.load_page(0)
+                    pix = page.get_pixmap(dpi=96)  # 调整 DPI 根据需要
+
+                    # 转换为 QImage 然后转为 QPixmap
+                    image = QImage(
+                        pix.samples,
+                        pix.width,
+                        pix.height,
+                        QImage.Format.Format_RGB888
+                    )
+                    pixmap = QPixmap.fromImage(image)
+
+                    # 缩放并保持宽高比
+                    scaled_pixmap = pixmap.scaled(
+                        self.preview_widget.size(),
+                        Qt.AspectRatioMode.KeepAspectRatio,
+                        Qt.TransformationMode.SmoothTransformation
+                    )
+
+                    # 显示预览
+                    self.preview_widget.setPixmap(scaled_pixmap)
+            except Exception as e:
+                self.preview_widget.setText("无法预览文件")
+                print(f"预览 PDF 出错: {str(e)}")
+        else:
+            self.preview_widget.setText("请选择 PDF 文件进行预览")
+
     def _add_files(self):
         """添加文件到列表"""
         files, _ = QFileDialog.getOpenFileNames(
@@ -173,6 +236,8 @@ class MainWindow(QMainWindow):
         )
         if files:
             self.file_list.addItems(files)
+            self.file_list.setCurrentRow(0)  # 自动选择第一个文件
+            self._update_preview()  # 更新预览
 
     def _remove_files(self):
         """移除选中的文件"""
