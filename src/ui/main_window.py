@@ -29,13 +29,15 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.file_list, stretch=1)
 
         # Right panel - Preview area
-        scroll_area = QScrollArea()
-        self.preview_widget = QLabel("请选择 PDF 文件进行预览")
-        self.preview_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.preview_widget.setMinimumSize(200, 300)
-        scroll_area.setWidget(self.preview_widget)
-        scroll_area.setWidgetResizable(True)
-        main_layout.addWidget(scroll_area, stretch=3)
+        self.scroll_area = QScrollArea()
+        self.preview_container = QWidget()
+        self.preview_layout = QVBoxLayout(self.preview_container)
+        self.preview_layout.setSpacing(10)
+        self.preview_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.scroll_area.setWidget(self.preview_container)
+        self.scroll_area.setWidgetResizable(True)
+        main_layout.addWidget(self.scroll_area, stretch=3)
 
         # Set layout
         widget = QWidget()
@@ -70,35 +72,50 @@ class MainWindow(QMainWindow):
         if selected_items:
             file_path = selected_items[0].text()
             try:
+                # 清除之前的预览
+                while self.preview_layout.count():
+                    item = self.preview_layout.takeAt(0)
+                    widget = item.widget()
+                    if widget:
+                        widget.deleteLater()
+
                 # 打开 PDF 文件
                 with fitz.open(file_path) as doc:
-                    # 获取第一页
-                    page = doc.load_page(0)
-                    pix = page.get_pixmap(dpi=96)  # 调整 DPI 根据需要
+                    for page_num in range(len(doc)):
+                        page = doc.load_page(page_num)
+                        pix = page.get_pixmap(dpi=96)
 
-                    # 转换为 QImage 然后转为 QPixmap
-                    image = QImage(
-                        pix.samples,
-                        pix.width,
-                        pix.height,
-                        QImage.Format.Format_RGB888
-                    )
-                    pixmap = QPixmap.fromImage(image)
+                        # 创建图片标签
+                        image_label = QLabel()
+                        image = QImage(
+                            pix.samples,
+                            pix.width,
+                            pix.height,
+                            QImage.Format.Format_RGB888
+                        )
+                        pixmap = QPixmap.fromImage(image)
+                        
+                        # 添加页码
+                        page_label = QLabel(f"第 {page_num + 1} 页")
+                        page_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                        page_label.setStyleSheet("font-size: 14px; font-weight: bold;")
 
-                    # 缩放并保持宽高比
-                    scaled_pixmap = pixmap.scaled(
-                        self.preview_widget.size(),
-                        Qt.AspectRatioMode.KeepAspectRatio,
-                        Qt.TransformationMode.SmoothTransformation
-                    )
+                        # 添加到布局
+                        image_label.setPixmap(pixmap)
+                        image_label.setFixedSize(500, 700)  # 固定大小以便更好缩放
+                        image_label.setScaledContents(True)
+                        self.preview_layout.addWidget(image_label)
+                        self.preview_layout.addWidget(page_label)
 
-                    # 显示预览
-                    self.preview_widget.setPixmap(scaled_pixmap)
             except Exception as e:
-                self.preview_widget.setText("无法预览文件")
+                error_label = QLabel("无法预览文件")
+                error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.preview_layout.addWidget(error_label)
                 print(f"预览 PDF 出错: {str(e)}")
         else:
-            self.preview_widget.setText("请选择 PDF 文件进行预览")
+            empty_label = QLabel("请选择 PDF 文件进行预览")
+            empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.preview_layout.addWidget(empty_label)
 
     def _add_files(self):
         """Add files to the file list"""
