@@ -69,6 +69,7 @@ class MainWindow(QMainWindow):
         process_menu.addAction("合并 PDF", self._merge_files)
         process_menu.addAction("拆分 PDF", self._split_files)
         process_menu.addAction("提取页面", self._extract_pages)
+        process_menu.addAction("添加水印", self._add_watermark)
 
 
     def _update_preview(self):
@@ -223,6 +224,37 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "成功", "页面提取完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
+
+    def _add_watermark(self):
+        if self.file_list.count() == 0:
+            QMessageBox.warning(self, "警告", "请先添加文件")
+            return
+
+        dialog = WatermarkDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        settings = dialog.get_settings()
+
+        input_path = self.file_list.item(0).text()
+        output_dir = QFileDialog.getExistingDirectory(self, "选择输出目录")
+
+        if not output_dir:
+            return
+
+        try:
+            PDFProcessor.add_watermark(
+                input_path,
+                output_dir,
+                settings["text"],
+                settings["image"],
+                settings["rotation"],
+                settings["opacity"],
+                settings["position"]
+            )
+            QMessageBox.information(self, "成功", "水印添加完成！")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"添加水印失败: {str(e)}")
 
 
 if __name__ == "__main__":
