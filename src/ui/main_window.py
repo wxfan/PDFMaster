@@ -30,14 +30,76 @@ class MainWindow(QMainWindow):
         main_layout = QHBoxLayout()
         main_widget.setLayout(main_layout)
 
-        # 左侧面板
-        left_panel = QWidget()
-        left_layout = QVBoxLayout()
-        left_panel.setLayout(left_layout)
+        # 左侧文件操作面板
+        left_panel = QTabWidget()
+        
+        # 文件操作面板 - 文件管理
+        file_operation_tab = QWidget()
+        file_operation_layout = QVBoxLayout()
+        
+        # 文件列表容器
+        file_list_panel = self._create_file_list_panel()
+        file_operation_layout.addWidget(file_list_panel)
+        
+        # 文件操作按钮
+        file_operation_buttons = QGroupBox("文件操作")
+        file_op_buttons_layout = QVBoxLayout()
+        
+        btn_add_files = QPushButton("添加文件")
+        btn_add_files.clicked.connect(self._add_files)
+        
+        btn_remove_files = QPushButton("移除选中")
+        btn_remove_files.clicked.connect(self._remove_files)
+        
+        btn_clear_files = QPushButton("清空列表")
+        btn_clear_files.clicked.connect(self.file_list.clear)
+        
+        file_op_buttons_layout.addWidget(btn_add_files)
+        file_op_buttons_layout.addWidget(btn_remove_files)
+        file_op_buttons_layout.addWidget(btn_clear_files)
+        file_operation_buttons.setLayout(file_op_buttons_layout)
+        
+        file_operation_layout.addWidget(file_operation_buttons)
+        file_operation_tab.setLayout(file_operation_layout)
+        
+        # 文件操作面板 - PDF处理
+        pdf_operations_tab = QWidget()
+        pdf_operations_layout = QVBoxLayout()
+        
+        # PDF 处理按钮容器
+        pdf_processing_buttons = QGroupBox("PDF 处理")
+        pdf_processing_layout = QVBoxLayout()
+        
+        # 合并 PDF 按钮
+        btn_merge = QPushButton("合并 PDF")
+        btn_merge.clicked.connect(self._merge_files)
+        
+        # 拆分 PDF 按钮
+        btn_split = QPushButton("拆分 PDF")
+        btn_split.clicked.connect(self._split_files)
+        
+        # 提取页面按钮
+        btn_extract = QPushButton("提取页面")
+        btn_extract.clicked.connect(self._extract_pages)
+        
+        pdf_processing_layout.addWidget(btn_merge)
+        pdf_processing_layout.addWidget(btn_split)
+        pdf_processing_layout.addWidget(btn_extract)
+        pdf_processing_buttons.setLayout(pdf_processing_layout)
+        
+        pdf_operations_layout.addWidget(pdf_processing_buttons)
+        pdf_operations_tab.setLayout(pdf_operations_layout)
+        
+        left_panel.addTab(file_operation_tab, "文件管理")
+        left_panel.addTab(pdf_operations_tab, "PDF处理")
+        
+        main_layout.addWidget(left_panel, stretch=1)
 
+        # 预览区域 (右侧面板)
+        right_panel = QGroupBox("预览与处理结果")
+        right_layout = QVBoxLayout()
+        
         # 文件预览区域
-        preview_group = QGroupBox("文件预览")
-        preview_layout = QVBoxLayout()
         self.preview_widget = QLabel("请选择 PDF 文件进行预览")
         self.preview_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.preview_widget.setMinimumSize(200, 300)
@@ -46,21 +108,11 @@ class MainWindow(QMainWindow):
         scroll_area = QScrollArea()
         scroll_area.setWidget(self.preview_widget)
         scroll_area.setWidgetResizable(True)
-        preview_layout.addWidget(scroll_area)
-        preview_group.setLayout(preview_layout)
-        left_layout.addWidget(preview_group)
-
-        # 文件列表区域
-        file_list_panel = self._create_file_list_panel()
-        left_layout.addWidget(file_list_panel)
-
-        main_layout.addWidget(left_panel, stretch=1)
-
-        # 右侧功能区域
-        right_panel = self._create_function_panel()
+        right_layout.addWidget(scroll_area)
+        
+        right_panel.setLayout(right_layout)
         main_layout.addWidget(right_panel, stretch=3)
 
-        # 设置中心部件
         self.setCentralWidget(main_widget)
 
     def _create_file_list_panel(self):
