@@ -226,10 +226,12 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
 
     def _add_watermark(self):
+        """Add a watermark to the selected PDF file."""
         if self.file_list.count() == 0:
             QMessageBox.warning(self, "警告", "请先添加文件")
             return
 
+        # Show watermark configuration dialog
         dialog = WatermarkDialog(self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
@@ -244,17 +246,20 @@ class MainWindow(QMainWindow):
 
         try:
             PDFProcessor.add_watermark(
-                input_path,
-                output_dir,
-                settings["text"],
-                settings["image"],
-                settings["rotation"],
-                settings["opacity"],
-                settings["position"]
+                input_path=input_path,
+                output_dir=output_dir,
+                watermark_text=settings.get("text"),
+                watermark_image_path=settings.get("image"),
+                rotation=settings.get("rotation"),
+                opacity=settings.get("opacity"),
+                position=settings.get("position"),
             )
             QMessageBox.information(self, "成功", "水印添加完成！")
         except Exception as e:
-            QMessageBox.critical(self, "错误", f"添加水印失败: {str(e)}")
+            q_err = f"添加水印失败: {str(e)}"
+            if "page 0 is not in document" in str(e):
+                q_err = "无法添加水印，PDF 文件为空或已损坏。请检查文件并重试。"
+            QMessageBox.critical(self, "错误", q_err)
 
 
 if __name__ == "__main__":
