@@ -274,7 +274,6 @@ class MainWindow(QMainWindow):
         password, ok = QInputDialog.getText(
             self, '输入密码',
             '输入加密密码：',
-           # password, ok = QInputDialog.getText(self, "Password", "Enter password:", QInputDialog.Password)
             QInputDialog.InputMode.Password
         )
         if not ok or not password:
