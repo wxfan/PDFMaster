@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QMenuBar, QScrollArea, QVBoxLayout,
-    QListWidget, QLabel, QFileDialog, QMessageBox, QAction
+    QListWidget, QLabel, QFileDialog, QMessageBox, QAction, QProgressDialog
 )
 from PyQt6.QtCore import Qt
 import fitz  # type: ignore
