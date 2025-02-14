@@ -127,7 +127,10 @@ class WatermarkDialog(QDialog):
         self.y_pos = QSpinBox()
         pos_group = QVBoxLayout()
         pos_group.addWidget(QLabel("位置 (x, y):"))
-        pos_group.addWidget(QHBoxLayout([self.x_pos, self.y_pos]))
+        hbox_layout = QHBoxLayout()
+        hbox_layout.addWidget(self.x_pos)
+        hbox_layout.addWidget(self.y_pos)
+        pos_group.addLayout(hbox_layout)
         layout.addLayout(pos_group)
 
         # Opacity and rotation controls
