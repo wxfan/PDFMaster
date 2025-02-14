@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QMenuBar, QScrollArea, QVBoxLayout,
     QListWidget, QLabel, QFileDialog, QMessageBox, QProgressDialog,
-    QCheckBox
+    QCheckBox, QDialog
 )
 from PyQt6.QtCore import Qt
 from src.ui.dialogs import SplitDialog, ExtractDialog
