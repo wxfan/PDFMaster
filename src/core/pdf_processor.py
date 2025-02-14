@@ -173,11 +173,18 @@ class PDFProcessor:
         """
         try:
             with fitz.open(input_path) as doc:
+                # Set standard permissions and encryption
                 doc.save(
                     output_path,
                     encryption=fitz.PDF_ENCRYPT_V4,  # 使用AES-256加密
                     user_pw=password,
-                    permissions=fitz.PDF_PERMISSIONS_NONE  # 禁止所有修改和打印
+                    owner_pw=password,  # 必须设置所有者密码以防止加密问题
+                    permissions={  # 设置权限
+                        "copy": False,
+                        "print": False,
+                        "annotations": False,
+                        "content_access": True  # 允许内容访问但限制复制
+                    }
                 )
         except Exception as e:
             print(f"加密PDF时出错: {str(e)}")

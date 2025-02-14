@@ -135,7 +135,7 @@ class MainWindow(QMainWindow):
             self,
             '输入密码',
             '请输入PDF密码：',
-            QInputDialog.InputMode.Password  # 隐藏密码输入
+            QInputDialog.InputMode.Password
         )
         if ok:
             return password
