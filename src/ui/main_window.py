@@ -17,6 +17,14 @@ class MainWindow(QMainWindow):
         # Create main layout
         main_layout = QHBoxLayout()
 
+        # Initialize UI components
+        self.merge_bookmarks = QCheckBox("保留书签", self)
+        self.split_mode_single = QRadioButton("逐页拆分", self)
+        self.split_mode_range = QRadioButton("按范围拆分", self)
+        self.split_range_start = QSpinBox()
+        self.split_range_end = QSpinBox()
+        self.extract_pages = QLineEdit(self)
+
         # Left panel - File list
         self.file_list = QListWidget()
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
@@ -161,39 +169,37 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "警告", "请先添加文件")
             return
 
-        # 获取输入文件
         input_path = self.file_list.item(0).text()
-
-        # 获取输出目录
         output_dir = QFileDialog.getExistingDirectory(self, "选择输出目录")
+
         if not output_dir:
             return
 
-        # 创建进度对话框
-        progress_dialog = QProgressDialog("正在拆分文件...", "取消", 0, 100, self)
-        progress_dialog.setWindowTitle("处理进度")
+        # Ensure mode is set correctly
+        if self.split_mode_single.isChecked():
+            mode = "single"
+            page_range = None
+        elif self.split_mode_range.isChecked():
+            mode = "range"
+            page_range = (self.split_range_start.value(), self.split_range_end.value())
+        else:
+            QMessageBox.warning(self, "警告", "请设置拆分模式")
+            return
+
+        # Show progress dialog
+        progress_dialog = QProgressDialog("正在处理...", "取消", 0, 100, self)
         progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
         progress_dialog.setAutoClose(True)
 
         def update_progress(value):
             progress_dialog.setValue(int(value * 100))
-            if progress_dialog.wasCanceled():
-                raise Exception("用户取消操作")
+            return not progress_dialog.wasCanceled()
 
-        # 执行拆分
         try:
-            if self.split_mode_single.isChecked():
-                PDFProcessor.split_pdf(input_path, output_dir, mode="single", progress_callback=update_progress)
-                with fitz.open(input_path) as doc:
-                    total_pages = len(doc)
-                QMessageBox.information(self, "成功", f"文件拆分完成！共输出了 {total_pages} 个文件。")
-            elif self.split_mode_range.isChecked():
-                start = self.split_range_start.value()
-                end = self.split_range_end.value()
-                PDFProcessor.split_pdf(input_path, output_dir, mode="range", page_range=(start, end))
-                QMessageBox.information(self, "成功", f"文件拆分完成！输出了 {end - start + 1} 个页面。")
+            PDFProcessor.split_pdf(input_path, output_dir, mode, page_range, update_progress)
+            QMessageBox.information(self, "成功", "处理完成!")
         except Exception as e:
-            QMessageBox.critical(self, "错误", f"拆分失败: {str(e)}")
+            QMessageBox.critical(self, "错误", str(e))
 
     def _extract_pages(self):
         """提取页面逻辑"""

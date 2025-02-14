@@ -10,15 +10,15 @@ class PDFProcessor:
         :param output_path: 输出文件路径
         :param keep_bookmarks: 是否保留书签
         """
-        merged_doc = fitz.open()  # 创建一个空文档
+        merged_doc = fitz.open()
+        bookmarks = []
         for file_path in file_list:
             with fitz.open(file_path) as doc:
-                merged_doc.insert_pdf(doc)  # 将文档插入到合并文档中
                 if keep_bookmarks:
-                    # 保留书签（可选）
-                    pass  # TODO: 实现书签合并逻辑
-
-        # 保存合并后的文档
+                    bookmarks.extend(doc.get_toC())
+                merged_doc.insert_pdf(doc)
+        if keep_bookmarks:
+            merged_doc.set_toc(bookmarks)
         merged_doc.save(output_path)
         merged_doc.close()
     @staticmethod
@@ -37,23 +37,26 @@ class PDFProcessor:
         with fitz.open(input_path) as doc:
             total_pages = len(doc)
             if mode == "single":
-                # 每页拆分为单独文件
                 for i in range(total_pages):
                     new_doc = fitz.open()
                     new_doc.insert_pdf(doc, from_page=i, to_page=i)
-                    output_path = output_dir / f"page_{i + 1:03d}.pdf"  # 使用三位数编号
+                    output_path = output_dir / f"page_{i + 1:03d}.pdf"
+                    progress = (i + 1) / total_pages
                     new_doc.save(output_path)
                     new_doc.close()
                     if progress_callback:
-                        progress_callback((i + 1) / total_pages)
-            elif mode == "range" and page_range:
-                # 按页码范围拆分
-                start, end = page_range
+                        progress_callback(progress)
+            elif mode == "range":
+                if not page_range or len(page_range) != 2:
+                    raise ValueError("Invalid page range")
+                start, end = max(0, page_range[0] - 1), min(total_pages - 1, page_range[1] - 1)
                 new_doc = fitz.open()
-                new_doc.insert_pdf(doc, from_page=start - 1, to_page=end - 1)
-                output_path = output_dir / f"pages_{start}-{end}.pdf"
+                new_doc.insert_pdf(doc, from_page=start, to_page=end)
+                output_path = output_dir / f"pages_{start + 1}-{end + 1}.pdf"
                 new_doc.save(output_path)
                 new_doc.close()
+                if progress_callback:
+                    progress_callback(1.0)
     @staticmethod
     def extract_pages(input_path, output_path, page_range):
         """
@@ -62,14 +65,22 @@ class PDFProcessor:
         :param output_path: 输出文件路径
         :param page_range: 页码范围，格式为 "1,3-5,7"
         """
-        with fitz.open(input_path) as doc:
-            new_doc = fitz.open()
+        ranges = []
+        try:
             for part in page_range.split(","):
                 if "-" in part:
                     start, end = map(int, part.split("-"))
-                    new_doc.insert_pdf(doc, from_page=start - 1, to_page=end - 1)
+                    ranges.extend(list(range(start-1, end)))
                 else:
-                    page_num = int(part) - 1
+                    ranges.append(int(part) - 1)
+
+            with fitz.open(input_path) as doc:
+                new_doc = fitz.open()
+                for page_num in ranges:
+                    if page_num < 0 or page_num >= len(doc):
+                        raise ValueError("Invalid page number")
                     new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
-            new_doc.save(output_path)
-            new_doc.close()
+                new_doc.save(output_path)
+                new_doc.close()
+        except Exception as e:
+            raise e
