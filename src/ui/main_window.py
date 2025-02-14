@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QCheckBox, QDialog
 )
 from PyQt6.QtCore import Qt
-from src.ui.dialogs import SplitDialog, ExtractDialog
+from src.ui.dialogs import SplitDialog, ExtractDialog, WatermarkDialog
 
 import fitz  # type: ignore
 from PyQt6.QtGui import QIcon, QImage, QPixmap
