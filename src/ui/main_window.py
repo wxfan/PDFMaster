@@ -1,9 +1,85 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QMenuBar, QScrollArea, QVBoxLayout,
     QListWidget, QLabel, QFileDialog, QMessageBox, QProgressDialog,
-    QCheckBox, QRadioButton, QSpinBox, QLineEdit
+    QCheckBox, QRadioButton, QSpinBox, QLineEdit, QDialog, QDialogButtonBox
 )
 from PyQt6.QtCore import Qt
+from typing import Dict, Any
+
+class SplitDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("PDF拆分设置")
+        
+        layout = QVBoxLayout()
+        
+        # Single page mode
+        self.single_radio = QRadioButton("逐页拆分")
+        self.single_radio.setChecked(True)
+        layout.addWidget(self.single_radio)
+        
+        # Range mode
+        self.range_radio = QRadioButton("按范围拆分")
+        layout.addWidget(self.range_radio)
+        
+        # Range controls
+        range_row = QHBoxLayout()
+        self.start_spin = QSpinBox()
+        self.start_spin.setRange(1, 10000)
+        self.start_spin.setValue(1)
+        self.end_spin = QSpinBox()
+        self.end_spin.setRange(1, 10000)
+        self.end_spin.setValue(1)
+        
+        range_row.addWidget(QLabel("开始页:"))
+        range_row.addWidget(self.start_spin)
+        range_row.addWidget(QLabel("结束页:"))
+        range_row.addWidget(self.end_spin)
+        layout.addLayout(range_row)
+        
+        # Button box
+        buttons = QDialogButtonBox()
+        buttons.addButton("确定", QDialogButtonBox.ButtonRole.AcceptRole)
+        buttons.addButton("取消", QDialogButtonBox.ButtonRole.RejectRole)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+        
+        self.setLayout(layout)
+        self.range_radio.toggled.connect(lambda: self.start_spin.setEnabled(self.range_radio.isChecked()))
+        self.range_radio.toggled.connect(lambda: self.end_spin.setEnabled(self.range_radio.isChecked()))
+
+    def get_settings(self) -> Dict[str, Any]:
+        if self.single_radio.isChecked():
+            return {"mode": "single"}
+        else:
+            return {"mode": "range", "start": self.start_spin.value(), "end": self.end_spin.value()}
+
+class ExtractDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("PDF提取设置")
+        
+        layout = QVBoxLayout()
+        
+        # Page range input
+        self.range_edit = QLineEdit()
+        self.range_edit.setPlaceholderText("输入页码范围, 例如: 1-3,5,7")
+        layout.addWidget(QLabel("页码范围:"))
+        layout.addWidget(self.range_edit)
+        
+        # Button box
+        buttons = QDialogButtonBox()
+        buttons.addButton("确定", QDialogButtonBox.ButtonRole.AcceptRole)
+        buttons.addButton("取消", QDialogButtonBox.ButtonRole.RejectRole)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+        
+        self.setLayout(layout)
+
+    def get_settings(self) -> Dict[str, str]:
+        return {"page_range": self.range_edit.text()}
 import fitz  # type: ignore
 from PyQt6.QtGui import QIcon, QImage, QPixmap
 from src.core.pdf_processor import PDFProcessor
@@ -20,11 +96,6 @@ class MainWindow(QMainWindow):
 
         # Initialize UI components
         self.merge_bookmarks = QCheckBox("保留书签", self)
-        self.split_mode_single = QRadioButton("逐页拆分", self)
-        self.split_mode_range = QRadioButton("按范围拆分", self)
-        self.split_range_start = QSpinBox()
-        self.split_range_end = QSpinBox()
-        self.extract_pages = QLineEdit(self)
 
         # Left panel - File list
         self.file_list = QListWidget()
@@ -170,24 +241,22 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "警告", "请先添加文件")
             return
 
+        # Show split dialog
+        dialog = SplitDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        settings = dialog.get_settings()
+        mode = settings["mode"]
+        page_range = (settings.get("start"), settings.get("end")) if mode == "range" else None
+
         input_path = self.file_list.item(0).text()
         output_dir = QFileDialog.getExistingDirectory(self, "选择输出目录")
 
         if not output_dir:
             return
 
-        # Ensure mode is set correctly
-        if self.split_mode_single.isChecked():
-            mode = "single"
-            page_range = None
-        elif self.split_mode_range.isChecked():
-            mode = "range"
-            page_range = (self.split_range_start.value(), self.split_range_end.value())
-        else:
-            QMessageBox.warning(self, "警告", "请设置拆分模式")
-            return
-
-        # Show progress dialog
+        # Set up progress dialog
         progress_dialog = QProgressDialog("正在处理...", "取消", 0, 100, self)
         progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
         progress_dialog.setAutoClose(True)
@@ -198,9 +267,9 @@ class MainWindow(QMainWindow):
 
         try:
             PDFProcessor.split_pdf(input_path, output_dir, mode, page_range, update_progress)
-            QMessageBox.information(self, "成功", "处理完成!")
+            QMessageBox.information(self, "成功", "文件拆分完成！")
         except Exception as e:
-            QMessageBox.critical(self, "错误", str(e))
+            QMessageBox.critical(self, "错误", f"拆分失败: {str(e)}")
 
     def _extract_pages(self):
         """提取页面逻辑"""
@@ -208,19 +277,22 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "警告", "请先添加文件")
             return
 
-        # 获取输入文件
-        input_path = self.file_list.item(0).text()
+        # Show extract dialog
+        dialog = ExtractDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
 
-        # 获取输出路径
+        settings = dialog.get_settings()
+        page_range = settings["page_range"]
+
+        input_path = self.file_list.item(0).text()
         output_path, _ = QFileDialog.getSaveFileName(
-            self, "保存提取文件", "extracted.pdf", "PDF 文件 (*.pdf)"
+            self, "保存提取的 PDF 文件", "extracted.pdf", "PDF 文件 (*.pdf)"
         )
         if not output_path:
             return
 
-        # 执行提取
         try:
-            page_range = self.extract_pages.text()
             PDFProcessor.extract_pages(input_path, output_path, page_range)
             QMessageBox.information(self, "成功", "页面提取完成！")
         except Exception as e:
