@@ -60,6 +60,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction("移除选中", self._remove_files)
         file_menu.addAction("清空列表", lambda: self.file_list.clear())
         file_menu.addAction("退出", self.close)
+        file_menu.addAction("加密当前文件", self._encrypt_current_file)  # 新增
 
         # Edit menu
         edit_menu = menubar.addMenu("编辑")
@@ -124,15 +125,52 @@ class MainWindow(QMainWindow):
             empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.preview_layout.addWidget(empty_label)
 
+    def _show_password_dialog(self):
+        """
+        显示密码输入对话框
+        :return: str 或 None 密码或取消
+        """
+        password, ok = QInputDialog.getText(
+            self,
+            '输入密码',
+            '请输入PDF密码：',
+            QInputDialog.InputMode.Password  # 隐藏密码输入
+        )
+        if ok:
+            return password
+        return None
+
     def _add_files(self):
         """Add files to the file list"""
         files, _ = QFileDialog.getOpenFileNames(
             self, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
         if files:
-            self.file_list.addItems(files)
-            self.file_list.setCurrentRow(0)
-            self._update_preview()
+            for file_path in files:
+                # 尝试打开文件以检测是否已加密
+                password = None
+                try:
+                    with fitz.open(file_path) as doc:
+                        pass  # 文件未加密，直接添加
+                except fitz.PasswordError:
+                    # 文件加密，需要用户输入密码
+                    password = self._show_password_dialog()
+                    if password is None:
+                        continue  # 用户取消操作
+                    if not PDFProcessor.verify_password(file_path, password):
+                        QMessageBox.critical(self, '错误', '密码错误，请重试！')
+                        continue
+                except Exception as e:
+                    # 处理其他可能的错误，如文件损坏
+                    QMessageBox.critical(self, '错误', f'无法打开文件：{str(e)}')
+                    continue
+
+                # 如果文件未加密或密码验证成功，添加到列表
+                self.file_list.addItems([file_path])
+
+            if self.file_list.count() > 0:
+                self.file_list.setCurrentRow(0)
+                self._update_preview()
 
     def _remove_files(self):
         """Remove selected files from the list"""
@@ -224,6 +262,28 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "成功", "页面提取完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
+
+    def _encrypt_current_file(self):
+        """Encrypt the currently selected PDF file."""
+        if self.file_list.count() == 0:
+            QMessageBox.warning(self, "警告", "请先添加文件")
+            return
+
+        selected_item = self.file_list.currentItem().text()
+        password, ok = QInputDialog.getText(
+            self, '输入密码',
+            '输入加密密码：',
+            QInputDialog.InputMode.Password
+        )
+        if not ok or not password:
+            return
+
+        output_path = os.path.splitext(selected_item)[0] + "_encrypted.pdf"
+        try:
+            PDFProcessor.encrypt_pdf(selected_item, output_path, password)
+            QMessageBox.information(self, '成功', f'文件已加密保存为：{output_path}')
+        except Exception as e:
+            QMessageBox.critical(self, '错误', f'加密失败: {str(e)}')
 
     def _add_watermark(self):
         """Add a watermark to the selected PDF file."""

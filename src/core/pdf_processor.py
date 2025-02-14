@@ -147,6 +147,43 @@ class PDFProcessor:
             raise
 
     @staticmethod
+    def verify_password(pdf_path, password):
+        """
+        验证PDF密码
+        :param pdf_path: PDF文件路径
+        :param password: 密码字符串
+        :return: bool 是否成功验证
+        """
+        try:
+            with fitz.open(pdf_path, password=password):
+                return True
+        except fitz.PasswordError:
+            return False
+        except Exception as e:
+            print(f"验证密码时出错: {str(e)}")
+            return False
+
+    @staticmethod
+    def encrypt_pdf(input_path, output_path, password):
+        """
+        给PDF文件加密
+        :param input_path: 输入文件路径
+        :param output_path: 输出文件路径
+        :param password: 加密密码
+        """
+        try:
+            with fitz.open(input_path) as doc:
+                doc.save(
+                    output_path,
+                    encryption=fitz.PDF_ENCRYPT_V4,  # 使用AES-256加密
+                    user_pw=password,
+                    permissions=fitz.PDF_PERMISSIONS_NONE  # 禁止所有修改和打印
+                )
+        except Exception as e:
+            print(f"加密PDF时出错: {str(e)}")
+            raise
+
+    @staticmethod
     def extract_pages(input_path, output_path, page_range):
         """
         提取指定页码范围
