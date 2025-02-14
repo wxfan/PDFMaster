@@ -131,13 +131,15 @@ class MainWindow(QMainWindow):
         显示密码输入对话框
         :return: str 或 None 密码或取消
         """
-        password, ok = QInputDialog.getText(
-            self,
-            '输入密码',
-            '请输入PDF密码：',
-            QInputDialog.InputMode.Password
-        )
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle('输入密码')
+        dialog.setLabelText('请输入加密密码：')
+        dialog.setInputMode(QInputDialog.InputMode.PasswordInput)
+        dialog.resize(300, 150)  # 设置窗口大小
+
+        ok = dialog.exec()
         if ok:
+            password = dialog.textValue()
             return password
         return None
 
@@ -271,12 +273,9 @@ class MainWindow(QMainWindow):
             return
 
         selected_item = self.file_list.currentItem().text()
-        password, ok = QInputDialog.getText(
-            self, '输入密码',
-            '输入加密密码：',
-            QInputDialog.InputMode.Password
-        )
-        if not ok or not password:
+        password = self._show_password_dialog()
+        
+        if password is None:
             return
 
         output_path = os.path.splitext(selected_item)[0] + "_encrypted.pdf"
