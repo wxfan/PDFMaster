@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QMenuBar, QScrollArea, QVBoxLayout,
     QListWidget, QLabel, QFileDialog, QMessageBox, QProgressDialog,
-    QCheckBox, QDialog, QInputDialog
+    QCheckBox, QDialog, QInputDialog, QLineEdit
 )
 import os
 from PyQt6.QtCore import Qt
@@ -134,7 +134,10 @@ class MainWindow(QMainWindow):
         dialog = QInputDialog(self)
         dialog.setWindowTitle('输入密码')
         dialog.setLabelText('请输入加密密码：')
-        dialog.setInputMode(QInputDialog.InputMode.PasswordInput)
+        
+        # 设置输入模式为密码模式
+        dialog.setTextEchoMode(QLineEdit.EchoMode.Password)  # Corrected line
+        
         dialog.resize(300, 150)  # 设置窗口大小
 
         ok = dialog.exec()
@@ -297,13 +300,22 @@ class MainWindow(QMainWindow):
             return
 
         settings = dialog.get_settings()
+        if not settings.get("text") and not settings.get("image"):
+            QMessageBox.warning(self, "警告", "请配置水印内容")
+            return
+        
+
 
         input_path = self.file_list.item(0).text()
         output_dir = QFileDialog.getExistingDirectory(self, "选择输出目录")
 
         if not output_dir:
             return
-
+        
+        doc = fitz.open(input_path)
+        if doc.page_count == 0:  # 👈 新增有效性检查
+            raise ValueError("PDF文件为空或损坏，无法处理")
+        print(settings)
         try:
             PDFProcessor.add_watermark(
                 input_path=input_path,
