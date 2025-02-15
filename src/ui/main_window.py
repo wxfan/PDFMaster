@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (
     QListWidget, QLabel, QFileDialog, QMessageBox, QProgressDialog,
     QCheckBox, QDialog, QInputDialog, QLineEdit
 )
+from .ribbon_widget import RibbonWidget
 import os
 from PyQt6.QtCore import Qt
 from src.ui.dialogs import SplitDialog, ExtractDialog, WatermarkDialog
