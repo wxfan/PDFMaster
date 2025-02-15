@@ -64,6 +64,11 @@ class MainWindow(QMainWindow):
         file_menu.addAction("清空列表", lambda: self.file_list.clear())
         file_menu.addAction("退出", self.close)
 
+        # Security menu
+        security_menu = self.menu_bar.addMenu("安全")
+        security_menu.addAction("加密文件", self._encrypt_current_file)
+        security_menu.addAction("移除密码", self._remove_password)
+
         # Edit menu
         edit_menu = self.menu_bar.addMenu("编辑")
         edit_menu.addAction("合并 PDF", self._merge_files)
@@ -285,6 +290,45 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, '成功', f'文件已加密保存为：{output_path}')
         except Exception as e:
             QMessageBox.critical(self, '错误', f'加密失败: {str(e)}')
+
+    def _remove_password(self):
+        """Remove password from the currently selected PDF file."""
+        if self.file_list.count() == 0:
+            QMessageBox.warning(self, "警告", "请先添加文件")
+            return
+
+        selected_item = self.file_list.currentItem().text()
+        password = self._show_password_dialog()
+        
+        if password is None:
+            return
+
+        # Show password dialog for new password (empty to remove)
+        new_password_dialog = QInputDialog(self)
+        new_password_dialog.setWindowTitle('输入新密码')
+        new_password_dialog.setLabelText('请输入新密码（留空以移除密码）：')
+        new_password_dialog.setTextEchoMode(QLineEdit.EchoMode.Password)
+        new_password_dialog.resize(300, 150)
+
+        ok = new_password_dialog.exec()
+        if ok:
+            new_password = new_password_dialog.textValue()
+        else:
+            return
+
+        output_path = os.path.splitext(selected_item)[0] + "_unlocked.pdf"
+        try:
+            # Using PyMuPDF to remove password
+            with fitz.open(selected_item, password=password) as doc:
+                doc.save(output_path, encryption=fitz.PDF_ENCRYPT_V2, user_pw=new_password)
+                
+            if new_password == "":
+                QMessageBox.information(self, '成功', '文件密码已移除！')
+            else:
+                QMessageBox.information(self, '成功', f'文件已重新加密并保存为：{output_path}')
+                
+        except Exception as e:
+            QMessageBox.critical(self, '错误', f'移除密码失败: {str(e)}')
 
     def _add_watermark(self):
         """Add a watermark to the selected PDF file."""
