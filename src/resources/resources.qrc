@@ -12,5 +12,6 @@
         <file>icons/remove_file.png</file>
         <file>icons/split.png</file>
         <file>icons/watermark.png</file>
+        <file>icons/rotate.png</file>
     </qresource>
 </RCC>
