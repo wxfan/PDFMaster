@@ -19,9 +19,6 @@ class MainWindow(QMainWindow):
         self.resize(1200, 800)
         self.setWindowIcon(QIcon(":/icons/app_icon.png"))
 
-        # Create main layout
-        main_layout = QHBoxLayout()
-
         # Initialize UI components
         self.merge_bookmarks = QCheckBox("保留书签", self)
 
@@ -29,13 +26,19 @@ class MainWindow(QMainWindow):
         self.file_list = QListWidget()
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.file_list.itemSelectionChanged.connect(self._update_preview)
-        
-        # Create ribbon interface
+
+        # Create main vertical layout
+        main_layout = QVBoxLayout()
+
+        # Create and add ribbon
         self.ribbon = RibbonWidget()
         self._create_ribbon()
+        main_layout.addWidget(self.ribbon)
 
-        # Add widgets to layout
-        main_layout.addWidget(self.file_list, stretch=1)
+        # Create content layout for file list and preview
+        content_widget = QWidget()
+        content_layout = QHBoxLayout(content_widget)
+        content_layout.addWidget(self.file_list, stretch=1)
 
         # Right panel - Preview area
         self.scroll_area = QScrollArea()
@@ -46,12 +49,13 @@ class MainWindow(QMainWindow):
         
         self.scroll_area.setWidget(self.preview_container)
         self.scroll_area.setWidgetResizable(True)
-        main_layout.addWidget(self.scroll_area, stretch=3)
+        content_layout.addWidget(self.scroll_area, stretch=3)
+        main_layout.addWidget(content_widget)
 
-        # Set layout
-        widget = QWidget()
-        widget.setLayout(main_layout)
-        self.setCentralWidget(widget)
+        # Set the main layout as the central widget
+        central_widget = QWidget()
+        central_widget.setLayout(main_layout)
+        self.setCentralWidget(central_widget)
 
     def _create_ribbon(self):
         """Create the ribbon interface"""
