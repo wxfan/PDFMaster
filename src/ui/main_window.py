@@ -318,10 +318,10 @@ class MainWindow(QMainWindow):
         if not output_dir:
             return
         
-        doc = fitz.open(input_path)
-        if doc.page_count == 0:  # 👈 新增有效性检查
-            raise ValueError("PDF文件为空或损坏，无法处理")
-        print(settings)
+        # Open PDF with context manager to ensure proper cleanup
+        with fitz.open(input_path) as doc:
+            if doc.page_count == 0:  # 👈 新增有效性检查
+                raise ValueError("PDF文件为空或损坏，无法处理")
         try:
             PDFProcessor.add_watermark(
                 input_path=input_path,
