@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (
     QListWidget, QLabel, QFileDialog, QMessageBox, QProgressDialog,
     QCheckBox, QDialog, QInputDialog, QLineEdit
 )
+from PyQt6.QtGui import QKeySequence
 import os
 from PyQt6.QtCore import Qt
 from src.ui.dialogs import SplitDialog, ExtractDialog, WatermarkDialog
@@ -58,18 +59,58 @@ class MainWindow(QMainWindow):
         
         # File menu
         file_menu = self.menu_bar.addMenu("文件")
-        file_menu.addAction(QIcon(":/icons/add_file.png"), "添加文件", self._add_files, "Ctrl+O")
-        file_menu.addAction(QIcon(":/icons/remove_file.png"), "移除选中", self._remove_files, "Ctrl+D")
-        file_menu.addAction(QIcon(":/icons/clear.png"), "清空列表", lambda: self.file_list.clear(), "Ctrl+Shift+D")
-        file_menu.addAction(QIcon(":/icons/exit.png"), "退出", self.close, "Ctrl+Q")
-        file_menu.addAction(QIcon(":/icons/encrypt.png"), "加密文件", self._encrypt_current_file)
+        file_menu.addAction(
+            icon=QIcon(":/icons/add_file.png"),
+            text="添加文件",
+            triggered=self._add_files,
+            shortcut=QKeySequence("Ctrl+O")
+        )
+        file_menu.addAction(
+            icon=QIcon(":/icons/remove_file.png"),
+            text="移除选中",
+            triggered=self._remove_files,
+            shortcut=QKeySequence("Ctrl+D")
+        )
+        file_menu.addAction(
+            icon=QIcon(":/icons/clear.png"),
+            text="清空列表",
+            triggered=lambda: self.file_list.clear(),
+            shortcut=QKeySequence("Ctrl+Shift+D")
+        )
+        file_menu.addAction(
+            icon=QIcon(":/icons/exit.png"),
+            text="退出",
+            triggered=self.close,
+            shortcut=QKeySequence("Ctrl+Q")
+        )
+        file_menu.addAction(
+            icon=QIcon(":/icons/encrypt.png"),
+            text="加密文件",
+            triggered=self._encrypt_current_file
+        )
 
         # Edit menu
         edit_menu = self.menu_bar.addMenu("编辑")
-        edit_menu.addAction(QIcon(":/icons/merge.png"), "合并 PDF", self._merge_files)
-        edit_menu.addAction(QIcon(":/icons/split.png"), "拆分 PDF", self._split_files)
-        edit_menu.addAction(QIcon(":/icons/extract.png"), "提取页面", self._extract_pages)
-        edit_menu.addAction(QIcon(":/icons/watermark.png"), "添加水印", self._add_watermark)
+        edit_menu.addAction(
+            icon=QIcon(":/icons/merge.png"),
+            text="合并 PDF",
+            triggered=self._merge_files
+        )
+        edit_menu.addAction(
+            icon=QIcon(":/icons/split.png"),
+            text="拆分 PDF",
+            triggered=self._split_files
+        )
+        edit_menu.addAction(
+            icon=QIcon(":/icons/extract.png"),
+            text="提取页面",
+            triggered=self._extract_pages
+        )
+        edit_menu.addAction(
+            icon=QIcon(":/icons/watermark.png"),
+            text="添加水印",
+            triggered=self._add_watermark
+        )
 
     def _update_preview(self):
         """更新 PDF 预览"""
