@@ -88,6 +88,71 @@ class ExtractDialog(QDialog):
     def get_settings(self):
         return {"page_range": self.range_edit.text()}
 
+class RotateDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("PDF旋转设置")
+        
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        group = QRadioButton("旋转方向")
+        group.setChecked(True)
+        layout.addWidget(group)
+
+        direction_group = QHBoxLayout()
+        self.rotate90 = QRadioButton("顺时针 90 度")
+        self.rotate180 = QRadioButton("180 度")
+        self.rotate270 = QRadioButton("顺时针 270 度")
+        self.rotate90.setChecked(True)
+        direction_group.addWidget(self.rotate90)
+        direction_group.addWidget(self.rotate180)
+        direction_group.addWidget(self.rotate270)
+        layout.addLayout(direction_group)
+
+        page_group = QVBoxLayout()
+        self.all_pages = QRadioButton("应用到所有页面")
+        self.all_pages.setChecked(True)
+        page_group.addWidget(self.all_pages)
+
+        self.custom_range = QRadioButton("指定页面范围")
+        page_group.addWidget(self.custom_range)
+
+        self.range_edit = QLineEdit()
+        self.range_edit.setPlaceholderText("例如: 1-3,5,7")
+        self.range_edit.setEnabled(False)
+        page_group.addWidget(QLabel("页码范围:"))
+        page_group.addWidget(self.range_edit)
+        layout.addLayout(page_group)
+
+        self.custom_range.toggled.connect(lambda: self.range_edit.setEnabled(self.custom_range.isChecked()))
+
+        # Button box
+        buttons = QDialogButtonBox()
+        buttons.addButton("确定", QDialogButtonBox.ButtonRole.AcceptRole)
+        buttons.addButton("取消", QDialogButtonBox.ButtonRole.RejectRole)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def get_settings(self):
+        if self.rotate90.isChecked():
+            angle = 90
+        elif self.rotate180.isChecked():
+            angle = 180
+        else:
+            angle = 270
+
+        if self.all_pages.isChecked():
+            pages = None
+        else:
+            pages = self.range_edit.text() if self.range_edit.text() else None
+
+        return {
+            "angle": angle,
+            "page_range": pages
+        }
+
 class WatermarkDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)

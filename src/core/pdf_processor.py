@@ -149,6 +149,44 @@ class PDFProcessor:
             raise
 
     @staticmethod
+    def rotate_pdfs(input_path, output_dir, angle, page_range=None):
+        """
+        Rotate PDF pages
+        :param input_path: 输入文件路径
+        :param output_dir: 输出目录
+        :param angle: 旋转角度 (90, 180, 270)
+        :param page_range: 页码范围，格式为 "1-3,5,7"
+        """
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        with fitz.open(input_path) as doc:
+            total_pages = len(doc)
+            if total_pages == 0:
+                raise ValueError("The PDF document is empty or damaged")
+
+            if page_range:
+                ranges = []
+                for part in page_range.split(","):
+                    if "-" in part:
+                        start, end = map(int, part.split("-"))
+                        ranges.extend(list(range(max(0, start-1), min(end, total_pages))))
+                    else:
+                        ranges.append(max(0, int(part) - 1))
+            else:
+                ranges = list(range(total_pages))
+
+            for page_num in ranges:
+                page = doc.load_page(page_num)
+                page.setRotation(angle)
+                # Create new doc per page for accurate rotation
+                new_doc = fitz.open()
+                new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+                output_path = output_dir / f"page_{page_num + 1:03d}_rotated.pdf"
+                new_doc.save(output_path)
+                new_doc.close()
+
+    @staticmethod
     def verify_password(pdf_path, password):
         """
         验证PDF密码

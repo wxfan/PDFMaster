@@ -13,6 +13,11 @@ class RibbonWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         self.setLayout(layout)
+        
+        # Add rotate action to the Page tab
+        page_tab = self.add_tab("Page")
+        page_group = self.add_group(page_tab, "页面操作")
+        self.add_action(page_group, ":/icons/rotate.png", "旋转", self._rotate_pdf, "Ctrl+R")
 
         # Create tab widget
         self.tab_widget = QTabWidget()
@@ -52,6 +57,14 @@ class RibbonWidget(QWidget):
         tab.layout().addWidget(group)
         
         return group
+
+    def _rotate_pdf(self):
+        dialog = RotateDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            settings = dialog.get_settings()
+            # TODO: Implement the rest of the rotation flow
+            # This would be connected to the PDFProcessor and UI updates
+            print("Rotation settings:", settings)  # For debugging
 
     def add_action(self, group, icon, text, callback, shortcut=None):
         """Add an action to a group"""
