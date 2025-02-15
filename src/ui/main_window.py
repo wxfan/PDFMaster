@@ -3,7 +3,6 @@ from PyQt6.QtWidgets import (
     QListWidget, QLabel, QFileDialog, QMessageBox, QProgressDialog,
     QCheckBox, QDialog, QInputDialog, QLineEdit
 )
-from .ribbon_widget import RibbonWidget
 import os
 from PyQt6.QtCore import Qt
 from src.ui.dialogs import SplitDialog, ExtractDialog, WatermarkDialog
@@ -30,12 +29,8 @@ class MainWindow(QMainWindow):
         # Create main vertical layout
         main_layout = QVBoxLayout()
 
-        # Create and add ribbon
-        self.ribbon = RibbonWidget()
-        self._create_ribbon()
-        main_layout.addWidget(self.ribbon)
-
         # Create content layout for file list and preview
+        self._setup_menu_bar()
         content_widget = QWidget()
         content_layout = QHBoxLayout(content_widget)
         content_layout.addWidget(self.file_list, stretch=1)
@@ -57,33 +52,24 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
-    def _create_ribbon(self):
-        """Create the ribbon interface"""
-        # File tab
-        file_tab = self.ribbon.add_tab("文件")
+    def _setup_menu_bar(self):
+        """Setup the menu bar with file and edit operations"""
+        self.menu_bar = self.menuBar()
         
-        # File operations group
-        file_group = self.ribbon.add_group(file_tab, "文件操作")
-        QIcon(":/icons/add_file.png")
-        #check the icon load sucessfully
-        print(QIcon(":/icons/add_file.png").isNull())
+        # File menu
+        file_menu = self.menu_bar.addMenu("文件")
+        file_menu.addAction(QIcon(":/icons/add_file.png"), "添加文件", self._add_files, "Ctrl+O")
+        file_menu.addAction(QIcon(":/icons/remove_file.png"), "移除选中", self._remove_files, "Ctrl+D")
+        file_menu.addAction(QIcon(":/icons/clear.png"), "清空列表", lambda: self.file_list.clear(), "Ctrl+Shift+D")
+        file_menu.addAction(QIcon(":/icons/exit.png"), "退出", self.close, "Ctrl+Q")
+        file_menu.addAction(QIcon(":/icons/encrypt.png"), "加密文件", self._encrypt_current_file)
 
-        self.ribbon.add_action(file_group, ":/icons/add_file.png", "添加文件", self._add_files)
-        self.ribbon.add_action(file_group, ":/icons/remove_file.png", "移除选中", self._remove_files)
-        self.ribbon.add_action(file_group, ":/icons/clear.png", "清空列表", lambda: self.file_list.clear())
-        self.ribbon.add_action(file_group, ":/icons/encrypt.png", "加密文件", self._encrypt_current_file)
-        self.ribbon.add_action(file_group, ":/icons/exit.png", "退出", self.close)
-
-        # PDF Processing tab
-        process_tab = self.ribbon.add_tab("编辑")
-        
-        # PDF operations group
-        pdf_group = self.ribbon.add_group(process_tab, "编辑")
-        self.ribbon.add_action(pdf_group, ":/icons/merge.png", "合并 PDF", self._merge_files)
-        self.ribbon.add_action(pdf_group, ":/icons/split.png", "拆分 PDF", self._split_files)
-        self.ribbon.add_action(pdf_group, ":/icons/extract.png", "提取页面", self._extract_pages)
-        self.ribbon.add_action(pdf_group, ":/icons/watermark.png", "添加水印", self._add_watermark)
-        
+        # Edit menu
+        edit_menu = self.menu_bar.addMenu("编辑")
+        edit_menu.addAction(QIcon(":/icons/merge.png"), "合并 PDF", self._merge_files)
+        edit_menu.addAction(QIcon(":/icons/split.png"), "拆分 PDF", self._split_files)
+        edit_menu.addAction(QIcon(":/icons/extract.png"), "提取页面", self._extract_pages)
+        edit_menu.addAction(QIcon(":/icons/watermark.png"), "添加水印", self._add_watermark)
 
     def _update_preview(self):
         """更新 PDF 预览"""
