@@ -60,6 +60,7 @@ class PDFProcessor:
                 new_doc.close()
                 if progress_callback:
                     progress_callback(1.0)
+    
     @staticmethod
     def add_watermark(
         input_path,
@@ -96,53 +97,54 @@ class PDFProcessor:
                     page = doc.load_page(page_num)
                     rect = page.rect
 
-                    # Create an overlay page for the watermark
-                    overlay = fitz.open()[0]
-                    overlay.set_rotation(rotation)
+                    # 创建水印层文档
+                    overlay_doc = fitz.open()
+                    overlay_page = overlay_doc.new_page(-1, width=rect.width, height=rect.height)
+                    overlay_page.set_rotation(rotation)
 
                     if watermark_text:
-                        text_color = (0, 0, 0, int(255 * opacity))
-                        overlay.insert_text(
+                        text_color = (0.6, 0.8, 0.7, opacity)  # 使用 fitz.Color 对象
+                        overlay_page.insert_text(
                             position,
                             watermark_text,
                             fontsize=20,
                             fontname="helv",
-                            fontflags=0,
                             color=text_color,
                             rotate=rotation,
                         )
 
                     if watermark_image_path:
-                        img = Image.open(watermark_image_path)
-                        img = ImageEnhance.Brightness(img).enhance(opacity)
-                        img = img.rotate(rotation, expand=True)
-                        img_bytes = BytesIO()
-                        img.save(img_bytes, format='PNG')
-                        img_pixmap = fitz.Pixmap(img_bytes.getvalue())
+                        with Image.open(watermark_image_path) as img:
+                            img = ImageEnhance.Brightness(img).enhance(opacity)
+                            img = img.rotate(rotation, expand=True)
+                            img_bytes = BytesIO()
+                            img.save(img_bytes, format='PNG')
+                            img_pixmap = fitz.Pixmap(img_bytes.getvalue())
 
-                        img_rect = fitz.Rect(
-                            position[0], position[1],
-                            position[0] + img.width, position[1] + img.height
-                        )
-                        overlay.insert_image(img_rect, pixmap=img_pixmap)
+                            img_rect = fitz.Rect(
+                                position[0],
+                                position[1],
+                                position[0] + img.width,
+                                position[1] + img.height
+                            )
+                            overlay_page.insert_image(img_rect, pixmap=img_pixmap)
 
-                    # Combine original page and overlay
-                    combined_page = fitz.Page(rect)
-                    combined_page.show_pdf_page(rect, doc, page_num)
-                    combined_page.show_pdf_page(rect, overlay)
-
-                    # Save the modified page
-                    output_path = os.path.join(
-                        output_dir,
-                        f"page_{page_num + 1:03d}_watermarked.pdf"
-                    )
+                    # 创建新文档用于保存合并后的页面
                     new_doc = fitz.open()
-                    new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
+                    new_page = new_doc.new_page(-1, width=rect.width, height=rect.height)
+
+                    # 先添加原页面内容
+                    new_page.show_pdf_page(rect, doc, page_num)
+                    # 再添加水印层
+                    new_page.show_pdf_page(rect, overlay_doc, 0)
+
+                    # 保存单个页面
+                    output_path = output_dir / f"page_{page_num + 1:03d}_watermarked.pdf"
                     new_doc.save(output_path)
                     new_doc.close()
+                    overlay_doc.close()
 
         except Exception as e:
-            # Log any exceptions to help with debugging
             print(f"Error adding watermark: {str(e)}")
             raise
 
