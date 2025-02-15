@@ -64,6 +64,7 @@ class MainWindow(QMainWindow):
         
         # File operations group
         file_group = self.ribbon.add_group(file_tab, "文件操作")
+        QIcon(":/icons/add_file.png")
         self.ribbon.add_action(file_group, ":/icons/add_file.png", "添加文件", self._add_files)
         self.ribbon.add_action(file_group, ":/icons/remove_file.png", "移除选中", self._remove_files)
         self.ribbon.add_action(file_group, ":/icons/clear.png", "清空列表", lambda: self.file_list.clear())
@@ -71,23 +72,15 @@ class MainWindow(QMainWindow):
         self.ribbon.add_action(file_group, ":/icons/exit.png", "退出", self.close)
 
         # PDF Processing tab
-        process_tab = self.ribbon.add_tab("PDF 处理")
+        process_tab = self.ribbon.add_tab("编辑")
         
         # PDF operations group
-        pdf_group = self.ribbon.add_group(process_tab, "PDF 操作")
+        pdf_group = self.ribbon.add_group(process_tab, "编辑")
         self.ribbon.add_action(pdf_group, ":/icons/merge.png", "合并 PDF", self._merge_files)
         self.ribbon.add_action(pdf_group, ":/icons/split.png", "拆分 PDF", self._split_files)
         self.ribbon.add_action(pdf_group, ":/icons/extract.png", "提取页面", self._extract_pages)
         self.ribbon.add_action(pdf_group, ":/icons/watermark.png", "添加水印", self._add_watermark)
-
-        # Add ribbon to main window
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.ribbon)
-        main_layout.addLayout(self.centralWidget().layout())
-        widget = QWidget()
-        widget.setLayout(main_layout)
-        self.setCentralWidget(widget)
-
+        
 
     def _update_preview(self):
         """更新 PDF 预览"""

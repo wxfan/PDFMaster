@@ -171,23 +171,23 @@ class PDFProcessor:
         :param output_path: 输出文件路径
         :param password: 加密密码
         """
-        try:
+        try:                       
+
             with fitz.open(input_path) as doc:
+                # 允许打印和可访问性
+                permissions = fitz.PDF_PERM_PRINT | fitz.PDF_PERM_ACCESSIBILITY
                 # Set standard permissions and encryption
                 doc.save(
                     output_path,
-                    encryption=fitz.PDF_ENCRYPT_V4,  # 使用AES-256加密
+                    encryption=fitz.PDF_ENCRYPT_AES_256,  # 使用AES-256加密
                     user_pw=password,
                     owner_pw=password,  # 必须设置所有者密码以防止加密问题
-                    permissions={  # 设置权限
-                        "copy": False,
-                        "print": False,
-                        "annotations": False,
-                        "content_access": True  # 允许内容访问但限制复制
-                    }
+                    permissions=permissions
                 )
         except Exception as e:
             print(f"加密PDF时出错: {str(e)}")
+            # print more details
+            print(f"Error details: {e}")
             raise
 
     @staticmethod

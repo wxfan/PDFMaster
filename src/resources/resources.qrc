@@ -2,5 +2,15 @@
 <RCC version="1.0">
     <qresource prefix="/icons">
         <file>icons/app_icon.png</file>
+        <file>icons/add_file.png</file>
+        <file>icons/remove_file.png</file>
+        <file>icons/clear.png</file>
+        <file>icons/encrypt.png</file>
+        <file>icons/exit.png</file>
+        <file>icons/extract.png</file>
+        <file>icons/merge.png</file>
+        <file>icons/remove_file.png</file>
+        <file>icons/split.png</file>
+        <file>icons/watermark.png</file>
     </qresource>
 </RCC>
