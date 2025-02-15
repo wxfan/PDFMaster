@@ -65,6 +65,9 @@ class MainWindow(QMainWindow):
         # File operations group
         file_group = self.ribbon.add_group(file_tab, "文件操作")
         QIcon(":/icons/add_file.png")
+        #check the icon load sucessfully
+        print(QIcon(":/icons/add_file.png").isNull())
+
         self.ribbon.add_action(file_group, ":/icons/add_file.png", "添加文件", self._add_files)
         self.ribbon.add_action(file_group, ":/icons/remove_file.png", "移除选中", self._remove_files)
         self.ribbon.add_action(file_group, ":/icons/clear.png", "清空列表", lambda: self.file_list.clear())
