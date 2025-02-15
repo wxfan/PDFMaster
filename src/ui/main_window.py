@@ -77,7 +77,12 @@ class MainWindow(QMainWindow):
         self.ribbon.add_action(pdf_group, ":/icons/watermark.png", "添加水印", self._add_watermark)
 
         # Add ribbon to main window
-        self.layout().insertWidget(0, self.ribbon)
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.ribbon)
+        main_layout.addLayout(self.centralWidget().layout())
+        widget = QWidget()
+        widget.setLayout(main_layout)
+        self.setCentralWidget(widget)
 
 
     def _update_preview(self):
