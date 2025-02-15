@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QTabWidget, QToolBar, QToolButton, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QTabWidget, QToolBar, QToolButton, QVBoxLayout, QDialog
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt
+from .dialogs import RotateDialog
 
 class RibbonWidget(QWidget):
     def __init__(self, parent=None):
