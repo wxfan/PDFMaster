@@ -59,18 +59,18 @@ class MainWindow(QMainWindow):
         
         # File menu
         file_menu = self.menu_bar.addMenu("文件")
-        file_menu.addAction("添加文件", self._add_files, QKeySequence("Ctrl+O"))
-        file_menu.addAction("移除选中", self._remove_files, QKeySequence("Ctrl+D"))
-        file_menu.addAction("清空列表", lambda: self.file_list.clear(), QKeySequence("Ctrl+Shift+D"))
-        file_menu.addAction("退出", self.close, QKeySequence("Ctrl+Q"))
-        file_menu.addAction("加密文件", self._encrypt_current_file)
+        file_menu.addAction("添加文件", self._add_files)
+        file_menu.addAction("移除选中", self._remove_files)
+        file_menu.addAction("清空列表", lambda: self.file_list.clear())
+        file_menu.addAction("退出", self.close)
 
         # Edit menu
         edit_menu = self.menu_bar.addMenu("编辑")
         edit_menu.addAction("合并 PDF", self._merge_files)
         edit_menu.addAction("拆分 PDF", self._split_files)
         edit_menu.addAction("提取页面", self._extract_pages)
-        edit_menu.addAction("添加水印", self._add_watermark)
+        edit_menu.addAction("添加水印", self._add_watermark)        
+        edit_menu.addAction("加密文件", self._encrypt_current_file)
 
     def _update_preview(self):
         """更新 PDF 预览"""
