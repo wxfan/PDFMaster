@@ -29,8 +29,9 @@ class MainWindow(QMainWindow):
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.file_list.itemSelectionChanged.connect(self._update_preview)
         
-        # Create menu bar
-        self._create_menus()
+        # Create ribbon interface
+        self.ribbon = RibbonWidget()
+        self._create_ribbon()
 
         # Add widgets to layout
         main_layout.addWidget(self.file_list, stretch=1)
@@ -51,27 +52,31 @@ class MainWindow(QMainWindow):
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
 
-    def _create_menus(self):
-        """Create the menu bar and its actions"""
-        menubar = self.menuBar()
+    def _create_ribbon(self):
+        """Create the ribbon interface"""
+        # File tab
+        file_tab = self.ribbon.add_tab("文件")
+        
+        # File operations group
+        file_group = self.ribbon.add_group(file_tab, "文件操作")
+        self.ribbon.add_action(file_group, ":/icons/add_file.png", "添加文件", self._add_files)
+        self.ribbon.add_action(file_group, ":/icons/remove_file.png", "移除选中", self._remove_files)
+        self.ribbon.add_action(file_group, ":/icons/clear.png", "清空列表", lambda: self.file_list.clear())
+        self.ribbon.add_action(file_group, ":/icons/encrypt.png", "加密文件", self._encrypt_current_file)
+        self.ribbon.add_action(file_group, ":/icons/exit.png", "退出", self.close)
 
-        # File menu
-        file_menu = menubar.addMenu("文件")
-        file_menu.addAction("添加文件", self._add_files)
-        file_menu.addAction("移除选中", self._remove_files)
-        file_menu.addAction("清空列表", lambda: self.file_list.clear())
-        file_menu.addAction("退出", self.close)
-        file_menu.addAction("加密当前文件", self._encrypt_current_file)  # 新增
+        # PDF Processing tab
+        process_tab = self.ribbon.add_tab("PDF 处理")
+        
+        # PDF operations group
+        pdf_group = self.ribbon.add_group(process_tab, "PDF 操作")
+        self.ribbon.add_action(pdf_group, ":/icons/merge.png", "合并 PDF", self._merge_files)
+        self.ribbon.add_action(pdf_group, ":/icons/split.png", "拆分 PDF", self._split_files)
+        self.ribbon.add_action(pdf_group, ":/icons/extract.png", "提取页面", self._extract_pages)
+        self.ribbon.add_action(pdf_group, ":/icons/watermark.png", "添加水印", self._add_watermark)
 
-        # Edit menu
-        edit_menu = menubar.addMenu("编辑")
-        process_menu = edit_menu.addMenu("PDF 处理")
-
-        # PDF Processing Menu Items
-        process_menu.addAction("合并 PDF", self._merge_files)
-        process_menu.addAction("拆分 PDF", self._split_files)
-        process_menu.addAction("提取页面", self._extract_pages)
-        process_menu.addAction("添加水印", self._add_watermark)
+        # Add ribbon to main window
+        self.layout().insertWidget(0, self.ribbon)
 
 
     def _update_preview(self):
