@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
 
         # Left panel - File list
         self.file_list = QListWidget()
-        self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        self.file_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)  # Changed to single selection for clarity
 
         # Create main vertical layout
         main_layout = QVBoxLayout()
@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
         # Create content layout for file list and preview
         content_widget = QWidget()
         content_layout = QHBoxLayout(content_widget)
-        content_layout.addWidget(self.file_list, stretch=1)
+        content_layout.addWidget(self.file_list, stretch=2)  # Adjusted stretch for better layout
 
         # Right panel - Preview area
         self.scroll_area = QScrollArea()
@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
 
         self.scroll_area.setWidget(self.preview_container)
         self.scroll_area.setWidgetResizable(True)
-        main_layout.addWidget(self.scroll_area, stretch=3)
+        main_layout.addWidget(self.scroll_area, stretch=4)  # Adjusted stretch for better layout
 
         # Initialize other components
         self.preview_manager = PreviewManager(self.file_list, self.scroll_area, self.preview_layout)
