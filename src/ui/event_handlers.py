@@ -37,7 +37,7 @@ class EventHandlers:
     def _add_files(self):
         """Add files to the file list"""
         files, _ = QFileDialog.getOpenFileNames(
-            self, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
+            self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
         if files:
             for file_path in files:
