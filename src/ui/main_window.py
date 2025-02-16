@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         # Initialize other components
         self.preview_manager = PreviewManager(self.file_list, self.scroll_area, self.preview_layout)
         self.menu_bar_setup = MenuBarSetup(self)
-        self.event_handlers = EventHandlers(self)
+        self.handlers = EventHandlers(self)  # Change this line
 
         # Setup menu
         self.menu_bar_setup.setup_menu()
