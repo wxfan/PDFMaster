@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (
     QFileDialog, QMessageBox, QProgressDialog,
     QDialog, QInputDialog, QLineEdit
 )
-from PyQt6.QtCore import Qt, QPointer
+from PyQt6.QtCore import Qt
 import os
 import fitz # type: ignore
 from src.core import PDFExtractor, PDFMerger, PDFRotator, PDFSecurity, PDFWatermarker,PDFSplitter
@@ -11,13 +11,13 @@ from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDi
 class EventHandlers:
     def __init__(self, main_window):
         super().__init__()
-        self.main_window = QPointer(main_window)
-        self.file_list = QPointer(main_window.file_list)
+        self.main_window = main_window
+        self.file_list = main_window.file_list
         self.preview_manager = main_window.preview_manager
 
     def _is_valid(self):
         """Check if widgets are still valid."""
-        return not self.main_window.isNull() and not self.file_list.isNull()
+        return self.main_window is not None and self.file_list is not None
 
     def _validate_file_list(self):
         """Check if file list is valid and not empty."""
