@@ -62,16 +62,16 @@ class EventHandlers:
                     if password is None:
                         continue
                     if not PDFSecurity.verify_password(file_path, password):
-                        QMessageBox.critical(main_window, '错误', '密码错误，请重试！')
+                        QMessageBox.critical(self.main_window, '错误', '密码错误，请重试！')
                         continue
                 except Exception as e:
-                    QMessageBox.critical(main_window, '错误', f'无法打开文件：{str(e)}')
+                    QMessageBox.critical(self.main_window, '错误', f'无法打开文件：{str(e)}')
                     continue
 
-                file_list.addItems([file_path])
+                self.file_list.addItems([file_path])
 
-            if file_list.count() > 0:
-                file_list.setCurrentRow(0)
+            if self.file_list.count() > 0:
+                self.file_list.setCurrentRow(0)
                 self._update_preview()
 
 
