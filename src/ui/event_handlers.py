@@ -1,39 +1,36 @@
+import os
 from PyQt6.QtWidgets import (
     QFileDialog, QMessageBox, QProgressDialog,
-    QDialog, QInputDialog, QLineEdit
+    QDialog, QInputDialog, QLineEdit,QListWidget 
 )
-from PyQt6.QtCore import Qt
-import os
-import fitz # type: ignore
-from src.core import PDFExtractor, PDFMerger, PDFRotator, PDFSecurity, PDFWatermarker,PDFSplitter
+from PyQt6.QtCore import Qt, QObject
+import fitz  # type: ignore
+from src.core import (
+    PDFExtractor, PDFMerger, PDFRotator, PDFSecurity, PDFWatermarker, PDFSplitter
+)
 from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDialog
 
-class EventHandlers:
+class EventHandlers(QObject):
     def __init__(self, main_window):
-        super().__init__()
         self.main_window = main_window
-        self.file_list = main_window.file_list
-        self.preview_manager = main_window.preview_manager
 
-    def _is_valid(self):
-        """Check if widgets are still valid."""
-        return self.main_window is not None and self.file_list is not None
-
-    def _validate_file_list(self):
-        """Check if file list is valid and not empty."""
-        if not self._is_valid():
-            QMessageBox.warning(self.main_window, "错误", "文件列表不可用")
-            return False
-        if self.file_list.count() == 0:
-            QMessageBox.warning(self.main_window, "警告", "请先添加文件")
-            return False
-        return True
+    def closeEvent(self, event):
+        if hasattr(self, 'event_handlers'):
+            self.event_handlers.main_window = None
+            self.event_handlers.file_list = None
+        event.accept()
 
     def _get_main_window(self):
-        """Get the main window instance if it's still valid."""
-        if self.main_window is None:
+        main_window = self.main_window_ref()
+        if main_window is None:
             return None
-        return self.main_window
+        return main_window
+    
+    def _get_file_list(self):
+        file_list = self.file_list_ref()
+        if file_list is None:
+            return None
+        return file_list
 
     def _show_password_dialog(self):
         main_window = self._get_main_window()
@@ -52,34 +49,14 @@ class EventHandlers:
         return None
 
     def _add_files(self):
-        if not self._is_valid():
-            return
-
-        files, _ = QFileDialog.getOpenFileNames(
+        """Add files to the file list."""
+        file_paths, _ = QFileDialog.getOpenFileNames(
             self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
-        if files:
-            for file_path in files:
-                try:
-                    with fitz.open(file_path) as doc:
-                        pass  # 文件未加密
-                except fitz.PasswordError:
-                    password = self._show_password_dialog()
-                    if password is None:
-                        continue
-                    if not PDFSecurity.verify_password(file_path, password):
-                        QMessageBox.critical(self.main_window, '错误', '密码错误，请重试！')
-                        continue
-                except Exception as e:
-                    QMessageBox.critical(self.main_window, '错误', f'无法打开文件：{str(e)}')
-                    continue
-
-                self.file_list.addItems([file_path])
-
-            if self.file_list.count() > 0:
-                self.file_list.setCurrentRow(0)
-                self._update_preview()
-
+        if file_paths:
+            for file_path in file_paths:
+                self.main_window.file_list.addItem(file_path)  # Access file_list through main_window
+        
 
     def _remove_files(self):
         """Remove selected files from the list"""
@@ -91,6 +68,11 @@ class EventHandlers:
 
     def _merge_files(self):
         """合并文件逻辑"""
+        main_window = self._get_main_window()
+        file_list = self._get_file_list()
+        if not main_window or not file_list or file_list.count() == 0:
+            QMessageBox.warning(main_window, "警告", "请先添加文件")
+            return
         if not self._validate_file_list():
             return
 
@@ -175,23 +157,27 @@ class EventHandlers:
             QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
 
     def _encrypt_current_file(self):
-        """Encrypt the currently selected PDF file."""
-        if self.file_list.count() == 0:
-            QMessageBox.warning(self, "警告", "请先添加文件")
+        main_window = self._get_main_window()
+        file_list = self._get_file_list()
+        if not main_window or not file_list or file_list.count() == 0:
+            QMessageBox.warning(main_window, "警告", "请先选择文件")
             return
 
-        selected_item = self.file_list.currentItem().text()
+        selected_item = file_list.currentItem()
+        if not selected_item:
+            QMessageBox.warning(main_window, "警告", "请先选择一个文件")
+            return
+
         password = self._show_password_dialog()
-        
         if password is None:
             return
 
-        output_path = os.path.splitext(selected_item)[0] + "_encrypted.pdf"
+        output_path = os.path.splitext(selected_item.text())[0] + "_encrypted.pdf"
         try:
-            PDFSecurity.encrypt_pdf(selected_item, output_path, password)
-            QMessageBox.information(self, '成功', f'文件已加密保存为：{output_path}')
+            PDFSecurity.encrypt_pdf(selected_item.text(), output_path, password)
+            QMessageBox.information(main_window, '成功', f'文件已加密保存为：{output_path}')
         except Exception as e:
-            QMessageBox.critical(self, '错误', f'加密失败: {str(e)}')
+            QMessageBox.critical(main_window, '错误', f'加密失败: {str(e)}')
 
     def _remove_password(self):
         """Remove password from the currently selected PDF file."""

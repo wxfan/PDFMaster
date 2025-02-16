@@ -13,6 +13,8 @@ from .event_handlers import EventHandlers
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Remove this line: self.file_list = []  
+        self.event_handlers = EventHandlers(self)  # Pass `self` (MainWindow) as the parent
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1200, 800)
         self.setWindowIcon(QIcon(":/icons/app_icon.png"))
@@ -49,12 +51,11 @@ class MainWindow(QMainWindow):
         self.handlers = EventHandlers(self)  # Change this line
         self.file_list.itemSelectionChanged.connect(self.update_preview)
 
-
         # Setup menu
         self.menu_bar_setup.setup_menu()
         widget = QWidget()
         widget.setLayout(main_layout)
-        self.setCentralWidget(widget)    
+        self.setCentralWidget(widget)     
 
     def update_preview(self):
         """Update the preview based on the selected file(s)."""
@@ -63,7 +64,6 @@ class MainWindow(QMainWindow):
             # Assuming you want to preview the first selected file
             file_path = selected_items[0].text()  # Adjust this based on how file paths are stored in the list
             self.preview_manager.load_preview(file_path)
-
 
 if __name__ == "__main__":
     import sys
