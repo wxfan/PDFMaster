@@ -10,7 +10,11 @@ class PreviewManager:
         self.preview_layout = preview_layout
 
     def update_preview(self):
-        selected_items = self.file_list.selectedItems()
+        file_list = self._get_file_list()
+        if not file_list:
+            return
+
+        selected_items = file_list.selectedItems()
         if selected_items:
             self._show_pdf_preview(selected_items[0].text())
         else:
