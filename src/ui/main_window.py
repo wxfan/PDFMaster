@@ -47,12 +47,23 @@ class MainWindow(QMainWindow):
         self.preview_manager = PreviewManager(self.file_list, self.scroll_area, self.preview_layout)
         self.menu_bar_setup = MenuBarSetup(self)
         self.handlers = EventHandlers(self)  # Change this line
+        self.file_list.itemSelectionChanged.connect(self.update_preview)
+
 
         # Setup menu
         self.menu_bar_setup.setup_menu()
         widget = QWidget()
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)    
+
+    def update_preview(self):
+        """Update the preview based on the selected file(s)."""
+        selected_items = self.file_list.selectedItems()
+        if selected_items:
+            # Assuming you want to preview the first selected file
+            file_path = selected_items[0].text()  # Adjust this based on how file paths are stored in the list
+            self.preview_manager.load_preview(file_path)
+
 
 if __name__ == "__main__":
     import sys
