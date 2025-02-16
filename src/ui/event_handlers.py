@@ -60,27 +60,21 @@ class EventHandlers(QObject):
             QMessageBox.critical(None, "错误", "主窗口不存在")
             return        
             
-        file_list = main_window.file_list
-        
-        if file_list is None or type(file_list) != QListWidget:
-            msg_box = QMessageBox(main_window)
-            msg_box.setIcon(QMessageBox.Icon.Critical)
-            msg_box.setWindowTitle("错误")
-            msg_box.setText("文件列表不存在或类型不正确")
-            msg_box.exec()
+        if not self.main_window or not self.main_window.file_list:
+            QMessageBox.critical(None, "错误", "文件列表不存在或主窗口无效")
             return
 
         file_paths, _ = QFileDialog.getOpenFileNames(
-            main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
+            self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
 
         if file_paths:
             for file_path in file_paths:
                 try:
                     print(f"添加文件: {file_path}")
-                    file_list.addItem(file_path)
+                    self.main_window.file_list.addItem(file_path)
                 except Exception as e:
-                    QMessageBox.critical(main_window, "错误", f"添加文件时出错: {str(e)}")
+                    QMessageBox.critical(self.main_window, "错误", f"添加文件时出错: {str(e)}")
     
     
     def _remove_files(self):
