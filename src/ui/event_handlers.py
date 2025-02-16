@@ -13,6 +13,7 @@ from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDi
 
 class EventHandlers(QObject):
     def __init__(self, main_window):
+        super().__init__()
         self.main_window = main_window
         self.file_list = main_window.file_list
         self.preview_manager = main_window.preview_manager

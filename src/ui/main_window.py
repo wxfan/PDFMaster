@@ -51,20 +51,22 @@ class MainWindow(QMainWindow):
         # Initialize other components
         self.preview_manager = PreviewManager(self.file_list, self.scroll_area, self.preview_layout)
         self.menu_bar_setup = MenuBarSetup(self)
-        self.handlers = EventHandlers(self)  # Change this line
-        self.file_list.itemSelectionChanged.connect(self.update_preview)
+        self.event_handlers = EventHandlers(self)  # Initialize EventHandlers once
+
+        # Initialize dialog references
+        self.event_handlers.file_rotate_dialog = RotateDialog(self)
+        self.event_handlers.file_split_dialog = SplitDialog(self)
+        self.event_handlers.file_extract_dialog = ExtractDialog(self)
+        self.event_handlers.file_watermark_dialog = WatermarkDialog(self)
+
+        # Connect file list selection change to preview update
+        self.file_list.itemSelectionChanged.connect(self.preview_manager.update_preview)
 
         # Setup menu
         self.menu_bar_setup.setup_menu()
         widget = QWidget()
         widget.setLayout(main_layout)
-        self.setCentralWidget(widget)   
-                
-        self.event_handlers = EventHandlers(self)  # Pass self (MainWindow) as the parent    
-        self.event_handlers.file_rotate_dialog = RotateDialog(self)
-        self.event_handlers.file_split_dialog = SplitDialog(self)
-        self.event_handlers.file_extract_dialog = ExtractDialog(self)
-        self.event_handlers.file_watermark_dialog = WatermarkDialog(self)
+        self.setCentralWidget(widget)
 
     def update_preview(self):
         """Update the preview based on the selected file(s)."""
