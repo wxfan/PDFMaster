@@ -7,6 +7,8 @@ from PyQt6.QtCore import Qt
 from .menu_bar import MenuBarSetup
 from .preview_manager import PreviewManager
 from .event_handlers import EventHandlers
+from .preview_manager import PreviewManager
+from .event_handlers import EventHandlers
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -41,7 +43,13 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidgetResizable(True)
         main_layout.addWidget(self.scroll_area, stretch=3)
 
-        # Set layout
+        # Initialize other components
+        self.preview_manager = PreviewManager(self.file_list, self.scroll_area, self.preview_layout)
+        self.menu_bar_setup = MenuBarSetup(self)
+        self.event_handlers = EventHandlers(self)
+
+        # Setup menu
+        self.menu_bar_setup.setup_menu()
         widget = QWidget()
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)    
