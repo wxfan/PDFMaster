@@ -61,7 +61,7 @@ class EventHandlers(QObject):
             return        
             
         if not self.main_window or not self.main_window.file_list:
-            QMessageBox.critical(None, "错误", "文件列表不存在或主窗口无效")
+            QMessageBox.critical(self.main_window, "错误", "文件列表不存在或主窗口无效")
             return
 
         file_paths, _ = QFileDialog.getOpenFileNames(
