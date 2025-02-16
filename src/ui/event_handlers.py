@@ -3,72 +3,77 @@ from PyQt6.QtWidgets import ( QFileDialog, QMessageBox, QProgressDialog,
 )
 import os
 import fitz # type: ignore
-from PyQt6.QtCore import Qt, QPointer
-from src.core import PDFExtractor, PDFMerger, PDFRotator, PDFSecurity, PDFWatermarker
-from src.core.PDFSplitter import PDFSplitter
+from PyQt6.QtCore import Qt
+import weakref
+from src.core import PDFExtractor, PDFMerger, PDFRotator, PDFSecurity, PDFWatermarker,PDFSplitter
 from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDialog
 
 class EventHandlers:
     def __init__(self, main_window):
-         self.main_window = main_window
-         self.file_list = QPointer(main_window.file_list)  # Use QPointer for safe access
-         self.merge_bookmarks = main_window.merge_bookmarks
+        super().__init__()
+        self.main_window_ref = weakref.ref(main_window)
+        self.file_list_ref = weakref.ref(main_window.file_list) if main_window and hasattr(main_window, 'file_list') else None
+
+    def _get_main_window(self):
+        main_window = self.main_window_ref()
+        if main_window is None:
+            return None
+        return main_window
+
+    def _get_file_list(self):
+        file_list = self.file_list_ref()
+        if file_list is None:
+            return None
+        return file_list
 
     def _show_password_dialog(self):
-        """
-        显示密码输入对话框
-        :return: str 或 None 密码或取消
-        """
-        dialog = QInputDialog(self)
+        main_window = self._get_main_window()
+        if not main_window:
+            return None
+
+        dialog = QInputDialog(main_window)
         dialog.setWindowTitle('输入密码')
         dialog.setLabelText('请输入加密密码：')
-        
-        # 设置输入模式为密码模式
-        dialog.setTextEchoMode(QLineEdit.EchoMode.Password)  # Corrected line
-        
-        dialog.resize(300, 150)  # 设置窗口大小
+        dialog.setTextEchoMode(QLineEdit.EchoMode.Password)
+        dialog.resize(300, 150)
 
         ok = dialog.exec()
         if ok:
-            password = dialog.textValue()
-            return password
+            return dialog.textValue()
         return None
 
     def _add_files(self):
-        """Add files to the file list"""
-        if self.file_list.isNull():  # Check if the widget is still valid
-            QMessageBox.warning(self.main_window, "警告", "文件列表已被删除，无法操作。")
+        main_window = self._get_main_window()
+        file_list = self._get_file_list()
+        if not main_window or not file_list:
+            QMessageBox.warning(main_window, "警告", "文件列表已被删除，无法操作。")
             return
 
         files, _ = QFileDialog.getOpenFileNames(
-            self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
+            main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
         if files:
             for file_path in files:
-                # 尝试打开文件以检测是否已加密
-                password = None
                 try:
                     with fitz.open(file_path) as doc:
-                        pass  # 文件未加密，直接添加
+                        pass  # 文件未加密
                 except fitz.PasswordError:
-                    # 文件加密，需要用户输入密码
                     password = self._show_password_dialog()
                     if password is None:
-                        continue  # 用户取消操作
+                        continue
                     if not PDFSecurity.verify_password(file_path, password):
-                        QMessageBox.critical(self.main_window, '错误', '密码错误，请重试！')
+                        QMessageBox.critical(main_window, '错误', '密码错误，请重试！')
                         continue
                 except Exception as e:
-                    # 处理其他可能的错误，如文件损坏
-                    QMessageBox.critical(self.main_window, '错误', f'无法打开文件：{str(e)}')
+                    QMessageBox.critical(main_window, '错误', f'无法打开文件：{str(e)}')
                     continue
 
-                # 如果文件未加密或密码验证成功，添加到列表
-                self.file_list.addItems([file_path])
+                file_list.addItems([file_path])
 
-            if self.file_list.count() > 0:
-                self.file_list.setCurrentRow(0)
+            if file_list.count() > 0:
+                file_list.setCurrentRow(0)
                 self._update_preview()
+
 
     def _remove_files(self):
         """Remove selected files from the list"""
