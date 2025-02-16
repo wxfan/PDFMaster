@@ -24,11 +24,6 @@ class EventHandlers(QObject):
         self.file_extract_dialog = None
         self.file_watermark_dialog = None
 
-    def closeEvent(self, event):
-        if hasattr(self, 'event_handlers'):
-            self.event_handlers.main_window = None
-            self.event_handlers.file_list = None
-        event.accept()
 
     def _get_main_window(self):
         main_window = self.main_window_ref()
@@ -60,22 +55,43 @@ class EventHandlers(QObject):
 
     def _add_files(self):
         """Add files to the file list."""
-        print(self.file_list)
+        main_window = self.main_window
+        if not main_window:
+            QMessageBox.critical(None, "错误", "主窗口不存在")
+            return        
+            
+        file_list = main_window.file_list
+        
+        if file_list is None or type(file_list) != QListWidget:
+            msg_box = QMessageBox(main_window)
+            msg_box.setIcon(QMessageBox.Icon.Critical)
+            msg_box.setWindowTitle("错误")
+            msg_box.setText("文件列表不存在或类型不正确")
+            msg_box.exec()
+            return
+
         file_paths, _ = QFileDialog.getOpenFileNames(
-            self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
+            main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
+
         if file_paths:
             for file_path in file_paths:
-                print(file_path)
-                self.main_window.file_list.addItem(file_path)  # Access file_list through main_window
-        
-
+                try:
+                    print(f"添加文件: {file_path}")
+                    file_list.addItem(file_path)
+                except Exception as e:
+                    QMessageBox.critical(main_window, "错误", f"添加文件时出错: {str(e)}")
+    
+    
     def _remove_files(self):
         """Remove selected files from the list"""
-        if not self._is_valid():
+        main_window = self.main_window
+        file_list = main_window.file_list
+        if not main_window or not file_list:
             return
-        for item in self.file_list.selectedItems():
-            self.file_list.takeItem(self.file_list.row(item))
+
+        for item in file_list.selectedItems():
+            file_list.takeItem(file_list.row(item))
         self.preview_manager.update_preview()
 
     def _merge_files(self):
