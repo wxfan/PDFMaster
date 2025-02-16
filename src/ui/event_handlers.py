@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import ( QFileDialog, QMessageBox, QProgressDialog,
 )
 import os
 import fitz # type: ignore
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QPointer
 from src.core import PDFExtractor, PDFMerger, PDFRotator, PDFSecurity, PDFWatermarker
 from src.core.PDFSplitter import PDFSplitter
 from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDialog
@@ -11,7 +11,7 @@ from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDi
 class EventHandlers:
     def __init__(self, main_window):
          self.main_window = main_window
-         self.file_list = main_window.file_list
+         self.file_list = QPointer(main_window.file_list)  # Use QPointer for safe access
          self.merge_bookmarks = main_window.merge_bookmarks
 
     def _show_password_dialog(self):
@@ -36,7 +36,7 @@ class EventHandlers:
 
     def _add_files(self):
         """Add files to the file list"""
-        if self.file_list.isNull():
+        if self.file_list.isNull():  # Check if the widget is still valid
             QMessageBox.warning(self.main_window, "警告", "文件列表已被删除，无法操作。")
             return
 
@@ -56,11 +56,11 @@ class EventHandlers:
                     if password is None:
                         continue  # 用户取消操作
                     if not PDFSecurity.verify_password(file_path, password):
-                        QMessageBox.critical(self, '错误', '密码错误，请重试！')
+                        QMessageBox.critical(self.main_window, '错误', '密码错误，请重试！')
                         continue
                 except Exception as e:
                     # 处理其他可能的错误，如文件损坏
-                    QMessageBox.critical(self, '错误', f'无法打开文件：{str(e)}')
+                    QMessageBox.critical(self.main_window, '错误', f'无法打开文件：{str(e)}')
                     continue
 
                 # 如果文件未加密或密码验证成功，添加到列表
