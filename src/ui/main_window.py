@@ -4,6 +4,11 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt
+
+from src.ui.dialogs.extract_dialog import ExtractDialog
+from src.ui.dialogs.rotate_dialog import RotateDialog
+from src.ui.dialogs.split_dialog import SplitDialog
+from src.ui.dialogs.watermark_dialog import WatermarkDialog
 from .menu_bar import MenuBarSetup
 from .preview_manager import PreviewManager
 from .event_handlers import EventHandlers
@@ -13,7 +18,6 @@ from .event_handlers import EventHandlers
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.event_handlers = EventHandlers(self)  # Pass self (MainWindow) as the parent
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1200, 800)
         self.setWindowIcon(QIcon(":/icons/app_icon.png"))
@@ -54,7 +58,13 @@ class MainWindow(QMainWindow):
         self.menu_bar_setup.setup_menu()
         widget = QWidget()
         widget.setLayout(main_layout)
-        self.setCentralWidget(widget)     
+        self.setCentralWidget(widget)   
+                
+        self.event_handlers = EventHandlers(self)  # Pass self (MainWindow) as the parent    
+        self.event_handlers.file_rotate_dialog = RotateDialog(self)
+        self.event_handlers.file_split_dialog = SplitDialog(self)
+        self.event_handlers.file_extract_dialog = ExtractDialog(self)
+        self.event_handlers.file_watermark_dialog = WatermarkDialog(self)
 
     def update_preview(self):
         """Update the preview based on the selected file(s)."""

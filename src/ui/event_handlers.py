@@ -17,6 +17,12 @@ class EventHandlers(QObject):
         self.file_list = main_window.file_list
         self.preview_manager = main_window.preview_manager
 
+        # Initialize dialog references
+        self.file_rotate_dialog = None
+        self.file_split_dialog = None
+        self.file_extract_dialog = None
+        self.file_watermark_dialog = None
+
     def closeEvent(self, event):
         if hasattr(self, 'event_handlers'):
             self.event_handlers.main_window = None
@@ -53,11 +59,13 @@ class EventHandlers(QObject):
 
     def _add_files(self):
         """Add files to the file list."""
+        print(self.file_list)
         file_paths, _ = QFileDialog.getOpenFileNames(
             self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
         if file_paths:
             for file_path in file_paths:
+                print(file_path)
                 self.main_window.file_list.addItem(file_path)  # Access file_list through main_window
         
 
