@@ -29,6 +29,12 @@ class EventHandlers:
             return False
         return True
 
+    def _get_main_window(self):
+        """Get the main window instance if it's still valid."""
+        if self.main_window is None:
+            return None
+        return self.main_window
+
     def _show_password_dialog(self):
         main_window = self._get_main_window()
         if not main_window:
