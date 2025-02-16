@@ -1,30 +1,33 @@
-from PyQt6.QtWidgets import ( QFileDialog, QMessageBox, QProgressDialog,
+from PyQt6.QtWidgets import (
+    QFileDialog, QMessageBox, QProgressDialog,
     QDialog, QInputDialog, QLineEdit
 )
+from PyQt6.QtCore import Qt, QPointer
 import os
 import fitz # type: ignore
-from PyQt6.QtCore import Qt
-import weakref
 from src.core import PDFExtractor, PDFMerger, PDFRotator, PDFSecurity, PDFWatermarker,PDFSplitter
 from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDialog
 
 class EventHandlers:
     def __init__(self, main_window):
         super().__init__()
-        self.main_window_ref = weakref.ref(main_window)
-        self.file_list_ref = weakref.ref(main_window.file_list) if main_window and hasattr(main_window, 'file_list') else None
+        self.main_window = QPointer(main_window)
+        self.file_list = QPointer(main_window.file_list)
+        self.preview_manager = main_window.preview_manager
 
-    def _get_main_window(self):
-        main_window = self.main_window_ref()
-        if main_window is None:
-            return None
-        return main_window
+    def _is_valid(self):
+        """Check if widgets are still valid."""
+        return not self.main_window.isNull() and not self.file_list.isNull()
 
-    def _get_file_list(self):
-        file_list = self.file_list_ref()
-        if file_list is None:
-            return None
-        return file_list
+    def _validate_file_list(self):
+        """Check if file list is valid and not empty."""
+        if not self._is_valid():
+            QMessageBox.warning(self.main_window, "错误", "文件列表不可用")
+            return False
+        if self.file_list.count() == 0:
+            QMessageBox.warning(self.main_window, "警告", "请先添加文件")
+            return False
+        return True
 
     def _show_password_dialog(self):
         main_window = self._get_main_window()
@@ -43,14 +46,11 @@ class EventHandlers:
         return None
 
     def _add_files(self):
-        main_window = self._get_main_window()
-        file_list = self._get_file_list()
-        if not main_window or not file_list:
-            QMessageBox.warning(main_window, "警告", "文件列表已被删除，无法操作。")
+        if not self._is_valid():
             return
 
         files, _ = QFileDialog.getOpenFileNames(
-            main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
+            self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
         if files:
             for file_path in files:
@@ -77,13 +77,15 @@ class EventHandlers:
 
     def _remove_files(self):
         """Remove selected files from the list"""
+        if not self._is_valid():
+            return
         for item in self.file_list.selectedItems():
             self.file_list.takeItem(self.file_list.row(item))
+        self.preview_manager.update_preview()
 
     def _merge_files(self):
         """合并文件逻辑"""
-        if self.file_list.count() == 0:
-            QMessageBox.warning(self, "警告", "请先添加文件")
+        if not self._validate_file_list():
             return
 
         # 获取文件列表
