@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import ( QFileDialog, QMessageBox, QProgressDialog,
     QDialog, QInputDialog, QLineEdit
 )
+from PyQt6.QtCore import QPointer
 import os
 import fitz # type: ignore
 from PyQt6.QtCore import Qt
@@ -11,7 +12,7 @@ from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDi
 class EventHandlers:
     def __init__(self, main_window):
          self.main_window = main_window
-         self.file_list = main_window.file_list
+         self.file_list = QPointer(main_window.file_list)
          self.merge_bookmarks = main_window.merge_bookmarks
 
     def _show_password_dialog(self):
@@ -36,6 +37,10 @@ class EventHandlers:
 
     def _add_files(self):
         """Add files to the file list"""
+        if self.file_list.isNull():
+            QMessageBox.warning(self.main_window, "警告", "文件列表已被删除，无法操作。")
+            return
+
         files, _ = QFileDialog.getOpenFileNames(
             self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
