@@ -13,8 +13,7 @@ from .event_handlers import EventHandlers
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        # Remove this line: self.file_list = []  
-        self.event_handlers = EventHandlers(self)  # Pass `self` (MainWindow) as the parent
+        self.event_handlers = EventHandlers(self)  # Pass self (MainWindow) as the parent
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1200, 800)
         self.setWindowIcon(QIcon(":/icons/app_icon.png"))

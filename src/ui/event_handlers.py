@@ -1,4 +1,5 @@
 import os
+from src.ui.preview_manager import PreviewManager
 from PyQt6.QtWidgets import (
     QFileDialog, QMessageBox, QProgressDialog,
     QDialog, QInputDialog, QLineEdit,QListWidget 
@@ -13,6 +14,8 @@ from src.ui.dialogs import RotateDialog, SplitDialog, ExtractDialog, WatermarkDi
 class EventHandlers(QObject):
     def __init__(self, main_window):
         self.main_window = main_window
+        self.file_list = main_window.file_list
+        self.preview_manager = main_window.preview_manager
 
     def closeEvent(self, event):
         if hasattr(self, 'event_handlers'):
