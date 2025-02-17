@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
     QLabel, QFileDialog, QMessageBox, QProgressBar, QTabWidget, QSpinBox,
-    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter, QMenuBar
+    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter, QMenuBar,
+    QPushButton
 )
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
