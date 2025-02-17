@@ -20,11 +20,11 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1200, 800)
         
+        # Setup UI components first
+        self._setup_ui()
+        
         # Initialize handlers
         self._init_handlers()
-        
-        # Setup UI components
-        self._setup_ui()
         
         # Initialize dialogs
         self._init_dialogs()
