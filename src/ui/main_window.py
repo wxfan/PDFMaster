@@ -1,9 +1,9 @@
 import sys
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QHBoxLayout, QMenuBar, 
     QToolBar, QListView, QGraphicsView
 )
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 
 class MainWindow(QMainWindow):
     def __init__(self):
