@@ -81,6 +81,14 @@ class MainWindow(QMainWindow):
         self.file_extract_dialog = ExtractDialog(self)
         self.file_watermark_dialog = WatermarkDialog(self)
 
+    def _initialize_file_list(self):
+        """Initialize the file list with empty state"""
+        if not hasattr(self, 'file_list_widget'):
+            raise RuntimeError("File list widget not initialized properly")
+        
+        self.file_list_widget.clear()
+        self.file_list = []
+
     # Event handler methods
     def _add_files(self):
         self.file_handler._add_files()
