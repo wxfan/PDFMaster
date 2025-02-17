@@ -18,30 +18,16 @@ class EventHandlers(QObject):
         self.file_list = main_window.file_list
         self.preview_manager = main_window.preview_manager
 
-        # Initialize dialog references
-        self.file_rotate_dialog = None
-        self.file_split_dialog = None
-        self.file_extract_dialog = None
-        self.file_watermark_dialog = None
-
-
-    def _get_main_window(self):
-        main_window = self.main_window_ref()
-        if main_window is None:
-            return None
-        return main_window
     
     def _get_file_list(self):
+        main_window = self.main_window()
         file_list = self.file_list_ref()
         if file_list is None:
             return None
         return file_list
 
     def _show_password_dialog(self):
-        main_window = self._get_main_window()
-        if not main_window:
-            return None
-
+        main_window = self.main_window()
         dialog = QInputDialog(main_window)
         dialog.setWindowTitle('输入密码')
         dialog.setLabelText('请输入加密密码：')
@@ -60,23 +46,37 @@ class EventHandlers(QObject):
             QMessageBox.critical(None, "错误", "主窗口不存在")
             return        
             
-        if not self.main_window or not self.main_window.file_list:
-            parent = self.main_window if isinstance(self.main_window, QObject) else None
-            QMessageBox.critical(parent, "错误", "文件列表不存在或主窗口无效")
-            return
-
+       
         file_paths, _ = QFileDialog.getOpenFileNames(
             self.main_window, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
         )
 
         if file_paths:
             for file_path in file_paths:
+                # 尝试打开文件以检测是否已加密
+                password = None
                 try:
-                    print(f"添加文件: {file_path}")
-                    self.main_window.file_list.addItem(file_path)
+                    with fitz.open(file_path) as doc:
+                        pass  # 文件未加密，直接添加
+                except fitz.PasswordError:
+                    # 文件加密，需要用户输入密码
+                    password = self._show_password_dialog()
+                    if password is None:
+                        continue  # 用户取消操作
+                    if not PDFSecurity.verify_password(file_path, password):
+                        QMessageBox.critical(self, '错误', '密码错误，请重试！')
+                        continue
                 except Exception as e:
-                    QMessageBox.critical(self.main_window, "错误", f"添加文件时出错: {str(e)}")
-    
+                    # 处理其他可能的错误，如文件损坏
+                    QMessageBox.critical(self, '错误', f'无法打开文件：{str(e)}')
+                    continue
+
+                # 如果文件未加密或密码验证成功，添加到列表
+                self.file_list.addItems([file_path])
+
+            if self.file_list.count() > 0:
+                self.file_list.setCurrentRow(0)
+                self.update_preview()
     
     def _remove_files(self):
         """Remove selected files from the list"""
@@ -91,7 +91,7 @@ class EventHandlers(QObject):
 
     def _merge_files(self):
         """合并文件逻辑"""
-        main_window = self._get_main_window()
+        main_window = self.main_window()
         file_list = self._get_file_list()
         if not main_window or not file_list or file_list.count() == 0:
             QMessageBox.warning(main_window, "警告", "请先添加文件")
@@ -117,6 +117,7 @@ class EventHandlers(QObject):
             QMessageBox.critical(self, "错误", f"合并失败: {str(e)}")
 
     def _split_files(self):
+        main_window = self.main_window()
         """拆分文件逻辑"""
         if self.file_list.count() == 0:
             QMessageBox.warning(self, "警告", "请先添加文件")
@@ -180,7 +181,7 @@ class EventHandlers(QObject):
             QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
 
     def _encrypt_current_file(self):
-        main_window = self._get_main_window()
+        main_window = self.main_window()
         file_list = self._get_file_list()
         if not main_window or not file_list or file_list.count() == 0:
             QMessageBox.warning(main_window, "警告", "请先选择文件")
