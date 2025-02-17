@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QScrollArea, QVBoxLayout, QListWidget,
-    QCheckBox
+    QMainWindow, QWidget, QHBoxLayout, QScrollArea, QVBoxLayout, QListWidget
 )
 from PyQt6.QtCore import Qt
 
