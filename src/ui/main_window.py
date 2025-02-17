@@ -9,7 +9,6 @@ from src.ui.dialogs.rotate_dialog import RotateDialog
 from src.ui.dialogs.split_dialog import SplitDialog
 from src.ui.dialogs.watermark_dialog import WatermarkDialog
 from .menu_bar import MenuBarSetup
-from .event_handlers import EventHandlers
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -46,14 +45,14 @@ class MainWindow(QMainWindow):
 
         # Initialize other components        
         self.menu_bar_setup = MenuBarSetup(self)
-        self.event_handlers = EventHandlers(self)  # Initialize EventHandlers once
+        self._init_handlers()
 
         # Initialize dialog references
-        self.event_handlers.file_rotate_dialog = RotateDialog(self)
-        self.event_handlers.file_split_dialog = SplitDialog(self)
-        self.event_handlers.file_extract_dialog = ExtractDialog(self)
-        self.event_handlers.file_watermark_dialog = WatermarkDialog(self)
-        self.event_handlers.file_preview_handler = WatermarkDialog(self)
+        self.file_rotate_dialog = RotateDialog(self)
+        self.file_split_dialog = SplitDialog(self)
+        self.file_extract_dialog = ExtractDialog(self)
+        self.file_watermark_dialog = WatermarkDialog(self)
+        self.file_preview_handler = WatermarkDialog(self)
 
         # Setup menu
         self.menu_bar_setup.setup_menu()

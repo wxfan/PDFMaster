@@ -5,15 +5,13 @@ from src.ui.handlers.encryption_handler import EncryptionHandler
 from src.ui.handlers.preview_handler import PreviewHandler
 
 class EventHandlers(QObject):
-    def __init__(self, main_window):
-        super().__init__()
-        self.main_window = main_window
-        self.file_handler = FileHandler(main_window)
-        self.pdf_processing_handler = PDFProcessingHandler(main_window)
-        self.encryption_handler = EncryptionHandler(main_window)
-        self.preview_handler = PreviewHandler(main_window)
+    def _init_handlers(self):
+        """Initialize all event handling handlers"""
+        self.file_handler = FileHandler(self)
+        self.pdf_processing_handler = PDFProcessingHandler(self)
+        self.encryption_handler = EncryptionHandler(self)
+        self.preview_handler = PreviewHandler(self)
 
-    # Delegate methods to respective handlers
     def _add_files(self):
         self.file_handler._add_files()
 
