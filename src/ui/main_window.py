@@ -45,9 +45,7 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self):
         """Setup UI components and layout"""
-        # Left panel - File list
-        self.file_list = QListWidget()
-        self.file_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+        
         
         # Main layout setup
         main_layout = QVBoxLayout()
@@ -71,6 +69,10 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
+
+        # Left panel - File list
+        self.file_list = QListWidget(widget)
+        self.file_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
 
     def _init_dialogs(self):
         """Initialize dialogs"""
