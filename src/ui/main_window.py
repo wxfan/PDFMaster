@@ -1,9 +1,12 @@
 import sys
 from PyQt6.QtWidgets import (
-    QMainWindow, QVBoxLayout, QHBoxLayout, QMenuBar, 
-    QToolBar, QListView, QGraphicsView
+    QMainWindow, QVBoxLayout, QHBoxLayout, QMenuBar,
+    QToolBar, QListView, QGraphicsView, QPushButton,
+    QLabel, QSpinBox, QScrollArea, QGraphicsScene, 
+    QHBoxLayout
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QPointF, QRectF
+from PyQt6.QtGui import QPainter, QTransform
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -21,8 +24,8 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(self.file_list)
         
         # Add file management buttons
-        self.add_file_btn = QPushButton("添加文件")
-        self.remove_file_btn = QPushButton("移除文件")
+        self.add_file_btn = QPushButton(parent=self, text="添加文件")
+        self.remove_file_btn = QPushButton(parent=self, text="移除文件")
         left_layout.addWidget(self.add_file_btn)
         left_layout.addWidget(self.remove_file_btn)
         
