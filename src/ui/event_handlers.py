@@ -19,25 +19,32 @@ class EventHandlers(QObject):
         self.preview_manager = main_window.preview_manager
 
     
-    def _get_file_list(self):
-        main_window = self.main_window()
-        file_list = self.file_list_ref()
-        if file_list is None:
-            return None
-        return file_list
+    def _add_files(self):
+        self.file_handler._add_files()
 
-    def _show_password_dialog(self):
-        main_window = self.main_window()
-        dialog = QInputDialog(main_window)
-        dialog.setWindowTitle('输入密码')
-        dialog.setLabelText('请输入加密密码：')
-        dialog.setTextEchoMode(QLineEdit.EchoMode.Password)
-        dialog.resize(300, 150)
+    def _remove_files(self):
+        self.file_handler._remove_files()
 
-        ok = dialog.exec()
-        if ok:
-            return dialog.textValue()
-        return None
+    def _merge_files(self):
+        self.pdf_processing_handler._merge_files()
+
+    def _split_files(self):
+        self.pdf_processing_handler._split_files()
+
+    def _extract_pages(self):
+        self.pdf_processing_handler._extract_pages()
+
+    def _encrypt_current_file(self):
+        self.encryption_handler._encrypt_current_file()
+
+    def _remove_password(self):
+        self.encryption_handler._remove_password()
+
+    def _add_watermark(self):
+        self.pdf_processing_handler._add_watermark()
+
+    def _rotate_pdf(self):
+        self.pdf_processing_handler._rotate_pdf()
 
     def _add_files(self):
         """Add files to the file list."""
