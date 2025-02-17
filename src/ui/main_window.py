@@ -20,13 +20,13 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1200, 800)
         
-        # Explicit initialization of file_list
-        self.file_list = None
+        # Initialize file list as empty list
+        self.file_list: list[str] = []
         
-        # Setup UI components first
+        # Initialize UI components
         self._setup_ui()
         
-        # Initialize handlers with valid file_list reference
+        # Initialize handlers after UI setup
         self._init_handlers()
         
         # Initialize dialogs
@@ -35,19 +35,19 @@ class MainWindow(QMainWindow):
         # Setup menu bar
         self.menu_bar_setup = MenuBarSetup(self)
         self.menu_bar_setup.setup_menu()
+        
+        # Initialize empty file list
+        self._initialize_file_list()
 
     def _init_handlers(self):
         """Initialize all event handling handlers"""
-        self.file_handler = FileHandler(self, self.file_list)
+        self.file_handler = FileHandler(self, self.file_list_widget)
         self.pdf_processing_handler = PDFProcessingHandler(self)
         self.encryption_handler = EncryptionHandler(self)
         self.preview_handler = PreviewHandler(self)
 
     def _setup_ui(self):
         """Setup UI components and layout"""
-        
-        
-        # Main layout setup
         main_layout = QVBoxLayout()
         content_widget = QWidget()
         content_layout = QHBoxLayout(content_widget)
@@ -61,18 +61,18 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidget(self.preview_container)
         self.scroll_area.setWidgetResizable(True)
         
+        # File list setup
+        self.file_list_widget = QListWidget()
+        self.file_list_widget.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+        
         # Add components to layout
-        content_layout.addWidget(self.file_list, stretch=2)
+        content_layout.addWidget(self.file_list_widget, stretch=2)
         main_layout.addWidget(self.scroll_area, stretch=4)
         
         # Set central widget
         widget = QWidget()
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
-
-        # Left panel - File list
-        self.file_list = QListWidget(widget)
-        self.file_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
 
     def _init_dialogs(self):
         """Initialize dialogs"""
