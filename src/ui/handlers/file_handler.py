@@ -4,30 +4,24 @@ import fitz # type: ignore
 from src.core import PDFSecurity
 
 class FileHandler(QObject):
-    def __init__(self, main_window):
+    def __init__(self, main_window, file_list):
         super().__init__()
         self.main_window = main_window
+        self.file_list = file_list
+        
         if not main_window:
             raise ValueError("MainWindow instance required")
-
-        # Initialize file_list safely
-        self.file_list = None
-        if hasattr(main_window, 'file_list'):
-            self.file_list = main_window.file_list
+        if not file_list:
+            raise ValueError("file_list instance required")
 
     def _add_files(self):
         """Add files to the file list."""
-        main_window = self.main_window
-        if not main_window:
-            QMessageBox.critical(None, "错误", "主窗口不存在")
+        if not self.main_window:
+            QMessageBox.critical(self.main_window, "错误", "主窗口不存在")
             return
         
-        if not hasattr(main_window, 'file_list'):
-            QMessageBox.critical(None, "错误", "文件列表不存在")
-            return
-            
-        if not main_window.file_list:
-            QMessageBox.critical(None, "错误", "文件列表未初始化")
+        if not self.file_list:
+            QMessageBox.critical(self.main_window, "错误", "文件列表未初始化")
             return
 
         file_paths, _ = QFileDialog.getOpenFileNames(

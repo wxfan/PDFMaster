@@ -20,12 +20,13 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1200, 800)
         
-        self.file_list = None  # Explicit initialization
+        # Explicit initialization of file_list
+        self.file_list = None
         
         # Setup UI components first
         self._setup_ui()
         
-        # Initialize handlers
+        # Initialize handlers with valid file_list reference
         self._init_handlers()
         
         # Initialize dialogs
@@ -37,8 +38,7 @@ class MainWindow(QMainWindow):
 
     def _init_handlers(self):
         """Initialize all event handling handlers"""
-        self.file_handler = FileHandler(self)
-        self.file_handler.file_list = self.file_list  # Ensure handler has valid reference
+        self.file_handler = FileHandler(self, self.file_list)
         self.pdf_processing_handler = PDFProcessingHandler(self)
         self.encryption_handler = EncryptionHandler(self)
         self.preview_handler = PreviewHandler(self)
