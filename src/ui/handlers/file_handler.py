@@ -7,13 +7,27 @@ class FileHandler(QObject):
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
-        self.file_list = main_window.file_list
+        if not main_window:
+            raise ValueError("MainWindow instance required")
+
+        # Initialize file_list safely
+        self.file_list = None
+        if hasattr(main_window, 'file_list'):
+            self.file_list = main_window.file_list
 
     def _add_files(self):
         """Add files to the file list."""
         main_window = self.main_window
         if not main_window:
             QMessageBox.critical(None, "错误", "主窗口不存在")
+            return
+        
+        if not hasattr(main_window, 'file_list'):
+            QMessageBox.critical(None, "错误", "文件列表不存在")
+            return
+            
+        if not main_window.file_list:
+            QMessageBox.critical(None, "错误", "文件列表未初始化")
             return
 
         file_paths, _ = QFileDialog.getOpenFileNames(
