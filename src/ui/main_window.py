@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QScrollArea, QVBoxLayout, QListWidget
+    QMainWindow, QWidget, QHBoxLayout, QScrollArea, QVBoxLayout, QListView
 )
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
 from src.ui.dialogs.extract_dialog import ExtractDialog
@@ -61,8 +62,11 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidgetResizable(True)
         
         # File list setup
-        self.file_list_widget = QListWidget()
-        self.file_list_widget.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+        self.file_list_widget = QListView()
+        self.file_list_model = QStandardItemModel()
+        self.file_list_widget.setModel(self.file_list_model)
+        self.file_list_widget.setSelectionMode(QListView.SelectionMode.SingleSelection)
+        self.file_list_widget.setViewMode(QListView.ViewMode.IconMode)
         
         # Add components to layout
         content_layout.addWidget(self.file_list_widget, stretch=2)
