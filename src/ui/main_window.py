@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
     QLabel, QFileDialog, QMessageBox, QProgressBar, QTabWidget, QSpinBox,
-    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter
+    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter, QMenuBar
 )
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon
@@ -11,17 +11,24 @@ from src.core import PDFExtractor, PDFMerger, PDFSplitter
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.menu_bar = None
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1000, 700)
 
         # 设置窗口图标
         self.setWindowIcon(QIcon(":/icons/app_icon.png"))
 
+        # 初始化菜单栏
+        self._create_menu_bar()
+        
         # 初始化 UI
         self._setup_ui()
 
     def _setup_ui(self):
         """初始化主界面布局"""
+        # 创建主菜单栏
+        self._create_menu_bar()
+
         # 主布局
         main_widget = QWidget()
         main_layout = QHBoxLayout()
@@ -104,11 +111,6 @@ class MainWindow(QMainWindow):
         options_group.setLayout(options_layout)
         layout.addWidget(options_group)
 
-        # 合并按钮
-        btn_merge = QPushButton("开始合并")
-        btn_merge.clicked.connect(self._merge_files)
-        layout.addWidget(btn_merge)
-
         tab.setLayout(layout)
         return tab
 
@@ -137,11 +139,6 @@ class MainWindow(QMainWindow):
         range_layout.addRow("结束页:", self.split_range_end)
         layout.addLayout(range_layout)
 
-        # 拆分按钮
-        btn_split = QPushButton("开始拆分")
-        btn_split.clicked.connect(self._split_files)
-        layout.addWidget(btn_split)
-
         tab.setLayout(layout)
         return tab
 
@@ -157,11 +154,6 @@ class MainWindow(QMainWindow):
         options_layout.addRow("页码范围:", self.extract_pages)
         options_group.setLayout(options_layout)
         layout.addWidget(options_group)
-
-        # 提取按钮
-        btn_extract = QPushButton("开始提取")
-        btn_extract.clicked.connect(self._extract_pages)
-        layout.addWidget(btn_extract)
 
         tab.setLayout(layout)
         return tab
