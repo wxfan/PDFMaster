@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QScrollArea, QVBoxLayout,
-    QListWidget, QCheckBox
+    QMainWindow, QWidget, QHBoxLayout, QScrollArea, QVBoxLayout, QListWidget,
+    QCheckBox
 )
 from PyQt6.QtCore import Qt
 
@@ -19,49 +19,19 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
         self.resize(1200, 800)
-
-        # Initialize UI components
-        self.merge_bookmarks = QCheckBox("保留书签", self)
-
-        # Left panel - File list
-        self.file_list = QListWidget()
-        self.file_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)  # Changed to single selection for clarity
         
-        # Create main vertical layout
-        main_layout = QVBoxLayout()
-
-        # Create content layout for file list and preview
-        content_widget = QWidget()
-        content_layout = QHBoxLayout(content_widget)
-        content_layout.addWidget(self.file_list, stretch=2)  # Adjusted stretch for better layout
-
-        # Right panel - Preview area
-        self.scroll_area = QScrollArea()
-        self.preview_container = QWidget()
-        self.preview_layout = QVBoxLayout(self.preview_container)
-        self.preview_layout.setSpacing(10)
-        self.preview_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.scroll_area.setWidget(self.preview_container)
-        self.scroll_area.setWidgetResizable(True)
-        main_layout.addWidget(self.scroll_area, stretch=4)  # Adjusted stretch for better layout
-
-        # Initialize other components        
-        self.menu_bar_setup = MenuBarSetup(self)
+        # Initialize handlers
         self._init_handlers()
-
-        # Initialize dialog references
-        self.file_rotate_dialog = RotateDialog(self)
-        self.file_split_dialog = SplitDialog(self)
-        self.file_extract_dialog = ExtractDialog(self)
-        self.file_watermark_dialog = WatermarkDialog(self)
-        self.file_preview_handler = WatermarkDialog(self)
-
-        # Setup menu
+        
+        # Setup UI components
+        self._setup_ui()
+        
+        # Initialize dialogs
+        self._init_dialogs()
+        
+        # Setup menu bar
+        self.menu_bar_setup = MenuBarSetup(self)
         self.menu_bar_setup.setup_menu()
-        widget = QWidget()
-        widget.setLayout(main_layout)
-        self.setCentralWidget(widget)
 
     def _init_handlers(self):
         """Initialize all event handling handlers"""
@@ -70,8 +40,46 @@ class MainWindow(QMainWindow):
         self.encryption_handler = EncryptionHandler(self)
         self.preview_handler = PreviewHandler(self)
 
+    def _setup_ui(self):
+        """Setup UI components and layout"""
+        # Left panel - File list
+        self.file_list = QListWidget()
+        self.file_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+        
+        # Main layout setup
+        main_layout = QVBoxLayout()
+        content_widget = QWidget()
+        content_layout = QHBoxLayout(content_widget)
+        
+        # Preview area setup
+        self.scroll_area = QScrollArea()
+        self.preview_container = QWidget()
+        self.preview_layout = QVBoxLayout(self.preview_container)
+        self.preview_layout.setSpacing(10)
+        self.preview_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.scroll_area.setWidget(self.preview_container)
+        self.scroll_area.setWidgetResizable(True)
+        
+        # Add components to layout
+        content_layout.addWidget(self.file_list, stretch=2)
+        main_layout.addWidget(self.scroll_area, stretch=4)
+        
+        # Set central widget
+        widget = QWidget()
+        widget.setLayout(main_layout)
+        self.setCentralWidget(widget)
+
+    def _init_dialogs(self):
+        """Initialize dialogs"""
+        self.file_rotate_dialog = RotateDialog(self)
+        self.file_split_dialog = SplitDialog(self)
+        self.file_extract_dialog = ExtractDialog(self)
+        self.file_watermark_dialog = WatermarkDialog(self)
+
+    # Event handler methods
     def _add_files(self):
-         self.file_handler._add_files()
+        self.file_handler._add_files()
+
     def _remove_files(self):
         self.file_handler._remove_files()
 
