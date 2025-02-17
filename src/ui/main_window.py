@@ -1,130 +1,257 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QScrollArea, QVBoxLayout, QListView
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
+    QLabel, QFileDialog, QMessageBox, QProgressBar, QTabWidget, QSpinBox,
+    QLineEdit, QCheckBox, QGroupBox, QFormLayout, QSplitter
 )
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QIcon
 
-from src.ui.dialogs.extract_dialog import ExtractDialog
-from src.ui.dialogs.rotate_dialog import RotateDialog
-from src.ui.dialogs.split_dialog import SplitDialog
-from src.ui.dialogs.watermark_dialog import WatermarkDialog
-from src.ui.handlers.encryption_handler import EncryptionHandler
-from src.ui.handlers.file_handler import FileHandler
-from src.ui.handlers.pdf_processing_handler import PDFProcessingHandler
-from src.ui.handlers.preview_handler import PreviewHandler
-from .menu_bar import MenuBarSetup
+from src.core import PDFExtractor, PDFMerger, PDFSplitter
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PDFMaster - PDF 文档处理工具")
-        self.resize(1200, 800)
-        
-        # Initialize file list as empty list
-        self.file_list: list[str] = []
-        
-        # Initialize UI components
-        self._setup_ui()
-        
-        # Initialize handlers after UI setup
-        self._init_handlers()
-        
-        # Initialize dialogs
-        self._init_dialogs()
-        
-        # Setup menu bar
-        self.menu_bar_setup = MenuBarSetup(self)
-        self.menu_bar_setup.setup_menu()
-        
-        # Initialize empty file list
-        self._initialize_file_list()
+        self.resize(1000, 700)
 
-    def _init_handlers(self):
-        """Initialize all event handling handlers"""
-        self.file_handler = FileHandler(self, self.file_list_widget)
-        self.pdf_processing_handler = PDFProcessingHandler(self)
-        self.encryption_handler = EncryptionHandler(self)
-        self.preview_handler = PreviewHandler(self)
+        # 设置窗口图标
+        self.setWindowIcon(QIcon(":/icons/app_icon.png"))
+
+        # 初始化 UI
+        self._setup_ui()
 
     def _setup_ui(self):
-        """Setup UI components and layout"""
-        main_layout = QVBoxLayout()
-        content_widget = QWidget()
-        content_layout = QHBoxLayout(content_widget)
-        
-        # Preview area setup
-        self.scroll_area = QScrollArea()
-        self.preview_container = QWidget()
-        self.preview_layout = QVBoxLayout(self.preview_container)
-        self.preview_layout.setSpacing(10)
-        self.preview_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.scroll_area.setWidget(self.preview_container)
-        self.scroll_area.setWidgetResizable(True)
-        
-        # File list setup
-        self.file_list_widget = QListView()
-        self.file_list_model = QStandardItemModel()
-        self.file_list_widget.setModel(self.file_list_model)
-        self.file_list_widget.setSelectionMode(QListView.SelectionMode.SingleSelection)
-        self.file_list_widget.setViewMode(QListView.ViewMode.IconMode)
-        
-        # Add components to layout
-        content_layout.addWidget(self.file_list_widget, stretch=2)
-        main_layout.addWidget(self.scroll_area, stretch=4)
-        
-        # Set central widget
-        widget = QWidget()
-        widget.setLayout(main_layout)
-        self.setCentralWidget(widget)
+        """初始化主界面布局"""
+        # 主布局
+        main_widget = QWidget()
+        main_layout = QHBoxLayout()
+        main_widget.setLayout(main_layout)
 
-    def _init_dialogs(self):
-        """Initialize dialogs"""
-        self.file_rotate_dialog = RotateDialog(self)
-        self.file_split_dialog = SplitDialog(self)
-        self.file_extract_dialog = ExtractDialog(self)
-        self.file_watermark_dialog = WatermarkDialog(self)
+        # 左侧文件列表区域
+        left_panel = self._create_file_list_panel()
+        main_layout.addWidget(left_panel, stretch=1)
 
-    def _initialize_file_list(self):
-        """Initialize the file list with empty state"""
-        if not hasattr(self, 'file_list_widget'):
-            raise RuntimeError("File list widget not initialized properly")
-        
-        self.file_list_widget.clear()
-        self.file_list = []
+        # 右侧功能区域
+        right_panel = self._create_function_panel()
+        main_layout.addWidget(right_panel, stretch=3)
 
-    # Event handler methods
+        # 设置中心部件
+        self.setCentralWidget(main_widget)
+
+    def _create_file_list_panel(self):
+        """创建文件列表面板"""
+        panel = QGroupBox("文件列表")
+        layout = QVBoxLayout()
+
+        # 文件列表
+        self.file_list = QListWidget()
+        self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        layout.addWidget(self.file_list)
+
+        # 操作按钮
+        btn_add = QPushButton("添加文件")
+        btn_add.clicked.connect(self._add_files)
+        btn_remove = QPushButton("移除选中")
+        btn_remove.clicked.connect(self._remove_files)
+        btn_clear = QPushButton("清空列表")
+        btn_clear.clicked.connect(self.file_list.clear)
+
+        # 按钮布局
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(btn_add)
+        btn_layout.addWidget(btn_remove)
+        btn_layout.addWidget(btn_clear)
+        layout.addLayout(btn_layout)
+
+        panel.setLayout(layout)
+        return panel
+
+    def _create_function_panel(self):
+        """创建功能面板"""
+        panel = QTabWidget()
+
+        # 合并功能页
+        merge_tab = self._create_merge_tab()
+        panel.addTab(merge_tab, "合并 PDF")
+
+        # 拆分功能页
+        split_tab = self._create_split_tab()
+        panel.addTab(split_tab, "拆分 PDF")
+
+        # 提取功能页
+        extract_tab = self._create_extract_tab()
+        panel.addTab(extract_tab, "提取页面")
+
+        return panel
+
+    def _create_merge_tab(self):
+        """创建合并功能页"""
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        # 输出文件名
+        output_layout = QFormLayout()
+        self.merge_output_name = QLineEdit("merged.pdf")
+        output_layout.addRow("输出文件名:", self.merge_output_name)
+        layout.addLayout(output_layout)
+
+        # 合并选项
+        options_group = QGroupBox("合并选项")
+        options_layout = QVBoxLayout()
+        self.merge_bookmarks = QCheckBox("保留书签")
+        self.merge_bookmarks.setChecked(True)
+        options_layout.addWidget(self.merge_bookmarks)
+        options_group.setLayout(options_layout)
+        layout.addWidget(options_group)
+
+        # 合并按钮
+        btn_merge = QPushButton("开始合并")
+        btn_merge.clicked.connect(self._merge_files)
+        layout.addWidget(btn_merge)
+
+        tab.setLayout(layout)
+        return tab
+
+    def _create_split_tab(self):
+        """创建拆分功能页"""
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        # 拆分模式选择
+        mode_group = QGroupBox("拆分模式")
+        mode_layout = QVBoxLayout()
+        self.split_mode_single = QCheckBox("每页拆分为单独文件")
+        self.split_mode_range = QCheckBox("按页码范围拆分")
+        mode_layout.addWidget(self.split_mode_single)
+        mode_layout.addWidget(self.split_mode_range)
+        mode_group.setLayout(mode_layout)
+        layout.addWidget(mode_group)
+
+        # 页码范围输入
+        range_layout = QFormLayout()
+        self.split_range_start = QSpinBox()
+        self.split_range_start.setMinimum(1)
+        self.split_range_end = QSpinBox()
+        self.split_range_end.setMinimum(1)
+        range_layout.addRow("起始页:", self.split_range_start)
+        range_layout.addRow("结束页:", self.split_range_end)
+        layout.addLayout(range_layout)
+
+        # 拆分按钮
+        btn_split = QPushButton("开始拆分")
+        btn_split.clicked.connect(self._split_files)
+        layout.addWidget(btn_split)
+
+        tab.setLayout(layout)
+        return tab
+
+    def _create_extract_tab(self):
+        """创建提取功能页"""
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        # 提取选项
+        options_group = QGroupBox("提取选项")
+        options_layout = QFormLayout()
+        self.extract_pages = QLineEdit("1,3-5,7")
+        options_layout.addRow("页码范围:", self.extract_pages)
+        options_group.setLayout(options_layout)
+        layout.addWidget(options_group)
+
+        # 提取按钮
+        btn_extract = QPushButton("开始提取")
+        btn_extract.clicked.connect(self._extract_pages)
+        layout.addWidget(btn_extract)
+
+        tab.setLayout(layout)
+        return tab
+
     def _add_files(self):
-        self.file_handler._add_files()
+        """添加文件到列表"""
+        files, _ = QFileDialog.getOpenFileNames(
+            self, "选择 PDF 文件", "", "PDF 文件 (*.pdf)"
+        )
+        if files:
+            self.file_list.addItems(files)
 
     def _remove_files(self):
-        self.file_handler._remove_files()
+        """移除选中的文件"""
+        for item in self.file_list.selectedItems():
+            self.file_list.takeItem(self.file_list.row(item))
 
     def _merge_files(self):
-        self.pdf_processing_handler._merge_files()
+        """合并文件逻辑"""
+        if self.file_list.count() == 0:
+            QMessageBox.warning(self, "警告", "请先添加文件")
+            return
+
+        # 获取文件列表
+        file_list = [self.file_list.item(i).text() for i in range(self.file_list.count())]
+
+        # 获取输出路径
+        output_path, _ = QFileDialog.getSaveFileName(
+            self, "保存合并文件", "merged.pdf", "PDF 文件 (*.pdf)"
+        )
+        if not output_path:
+            return
+
+        # 执行合并
+        try:
+            PDFMerger.merge_pdfs(file_list, output_path, self.merge_bookmarks.isChecked())
+            QMessageBox.information(self, "成功", "文件合并完成！")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"合并失败: {str(e)}")
 
     def _split_files(self):
-        self.pdf_processing_handler._split_files()
+        """拆分文件逻辑"""
+        if self.file_list.count() == 0:
+            QMessageBox.warning(self, "警告", "请先添加文件")
+            return
+
+        # 获取输入文件
+        input_path = self.file_list.item(0).text()
+
+        # 获取输出目录
+        output_dir = QFileDialog.getExistingDirectory(self, "选择输出目录")
+        if not output_dir:
+            return
+
+        # 执行拆分
+        try:
+            if self.split_mode_single.isChecked():
+                PDFSplitter.split_pdf(input_path, output_dir, mode="single")
+            elif self.split_mode_range.isChecked():
+                start = self.split_range_start.value()
+                end = self.split_range_end.value()
+                PDFSplitter.split_pdf(input_path, output_dir, mode="range", page_range=(start, end))
+            QMessageBox.information(self, "成功", "文件拆分完成！")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"拆分失败: {str(e)}")
 
     def _extract_pages(self):
-        self.pdf_processing_handler._extract_pages()
+        """提取页面逻辑"""
+        if self.file_list.count() == 0:
+            QMessageBox.warning(self, "警告", "请先添加文件")
+            return
 
-    def _encrypt_current_file(self):
-        self.encryption_handler._encrypt_current_file()
+        # 获取输入文件
+        input_path = self.file_list.item(0).text()
 
-    def _remove_password(self):
-        self.encryption_handler._remove_password()
+        # 获取输出路径
+        output_path, _ = QFileDialog.getSaveFileName(
+            self, "保存提取文件", "extracted.pdf", "PDF 文件 (*.pdf)"
+        )
+        if not output_path:
+            return
 
-    def _add_watermark(self):
-        self.pdf_processing_handler._add_watermark()
+        # 执行提取
+        try:
+            page_range = self.extract_pages.text()
+            PDFExtractor.extract_pages(input_path, output_path, page_range)
+            QMessageBox.information(self, "成功", "页面提取完成！")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
 
-    def _rotate_pdf(self):
-        self.pdf_processing_handler._rotate_pdf()
-
-    def update_preview(self):
-        self.preview_handler.update_preview()
-
-    def show_empty_preview(self):
-        self.preview_handler._show_empty_preview()
 
 if __name__ == "__main__":
     import sys
