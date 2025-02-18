@@ -16,18 +16,22 @@ class PreviewHandler:
             self.text_item.setPlainText("当前页数")
             self.text_item.setPos(10, 10)
             self.text_item.setZValue(10)
-            # Set style
-            # Create text format with background
-            text_format = QTextFormat()
-            text_format.setForeground(Qt.GlobalColor.white)
-            text_format.setBackground(Qt.GlobalColor.black)
-            self.text_item.setFormat(text_format)
             self.preview_scene.addItem(self.text_item)
             
+            # Set text styling using painter
+            self.set_text_style()
+            
+    def set_text_style(self):
+        """Set the text styling properties"""
+        font = self.text_item.font()
+        font.setPointSize(12)
+        self.text_item.setFont(font)
+        
     def draw_page_number(self, pixmap, page_number):
         """Draw page number on the pixmap"""
         painter = QPainter(pixmap)
         painter.setPen(Qt.GlobalColor.white)
+        painter.setBrush(Qt.GlobalColor.black)
         painter.setFont(self.text_item.font())
         
         # Calculate text position
