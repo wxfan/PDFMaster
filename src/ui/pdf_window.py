@@ -6,8 +6,11 @@ from PyQt6.QtWidgets import (
     QWidget,
     QListWidget,
     QFileDialog,
-    QMessageBox
+    QMessageBox,
+    QGraphicsScene,
+    QGraphicsView
 )
+from PyQt6.QtGui import QImage, QPainter, QPixmap
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QPixmap,QAction,QImage
 import fitz  # type: ignore
@@ -27,7 +30,12 @@ class PDFWindow(QMainWindow):
         # 左侧文件列表区
         self.file_list = QListWidget()
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        main_layout.addWidget(self.file_list, 1)  # 弹性布局
+        main_layout.addWidget(self.file_list, 1)  # 左侧占布局比例
+
+        # 右侧预览区
+        self.preview_scene = QGraphicsScene()
+        self.preview_view = QGraphicsView(self.preview_scene)
+        main_layout.addWidget(self.preview_view, 2)  # 右侧占布局比例
         # 创建菜单栏
         self.create_menu_bar()
 
@@ -117,7 +125,9 @@ class PDFWindow(QMainWindow):
                 self.preview_widget.set_pixmap(pixmap)
             except Exception as e:
                 QMessageBox.critical(self, "预览错误", f"无法预览 PDF 文件: {str(e)}")
-                self.preview_widget.set_pixmap(None)
+                self.preview_scene.clear()
+            else:
+                self.preview_scene.clear()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
