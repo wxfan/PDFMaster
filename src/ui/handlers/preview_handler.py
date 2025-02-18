@@ -16,43 +16,63 @@ class PreviewHandler:
         if file_path:
             try:
                 self.pdf_document = fitz.open(file_path)
-                self.current_page = page_number
-                page = self.pdf_document.load_page(self.current_page)
-                # 设置缩放比例
-                zoom = 1.0
-                mat = fitz.Matrix(zoom, zoom)
-                pix = page.get_pixmap(matrix=mat)
-                # Convert the pixmap to QImage using correct format
-                qimage = QImage(
-                    pix.samples,
-                    pix.width,
-                    pix.height,
-                    pix.stride,
-                    QImage.Format.Format_RGB888  # 使用正确的格式
-                ).rgbSwapped()  # 转换为 RGB 格式
-                pixmap = QPixmap.fromImage(qimage)
-                # 清除之前的预览并添加新的图像
+                # Clear previous preview
                 self.preview_scene.clear()
-                self.preview_scene.addPixmap(pixmap)
-                # 设置视图大小适应图像
-                view_rect = QRectF(pixmap.rect())
-                self.preview_view.setSceneRect(view_rect)
-                # 不设置固定大小，以允许场景矩形调整
+            
+                # If multiple pages, add scrollable view
+                if len(self.pdf_document) > 1:
+                    # Calculate combined size for all pages
+                    x_pos = 0
+                    y_pos = 0
+                
+                    for page_num in range(len(self.pdf_document)):
+                        page = self.pdf_document.load_page(page_num)
+                        zoom = 1.0
+                        mat = fitz.Matrix(zoom, zoom)
+                        pix = page.get_pixmap(matrix=mat)
+                    
+                        qimage = QImage(
+                            pix.samples,
+                            pix.width,
+                            pix.height,
+                            pix.stride,
+                            QImage.Format.Format_RGB888
+                        ).rgbSwapped()
+                        pixmap = QPixmap.fromImage(qimage)
+                    
+                        # Add each page to the scene with vertical offset
+                        self.preview_scene.addPixmap(pixmap)
+                        x_pos += pixmap.width()
+                        y_pos += pixmap.height()
+                
+                    # Set scene size to accommodate all pages
+                    self.preview_scene.setSceneRect(
+                        0, 0, 
+                        x_pos, 
+                        y_pos
+                    )
+                else:
+                    # Single page display
+                    page = self.pdf_document.load_page(0)
+                    zoom = 1.0
+                    mat = fitz.Matrix(zoom, zoom)
+                    pix = page.get_pixmap(matrix=mat)
+                    qimage = QImage(
+                        pix.samples,
+                        pix.width,
+                        pix.height,
+                        pix.stride,
+                        QImage.Format.Format_RGB888
+                    ).rgbSwapped()
+                    pixmap = QPixmap.fromImage(qimage)
+                    self.preview_scene.addPixmap(pixmap)
+                    self.preview_view.setSceneRect(QRectF(pixmap.rect()))
+            
+                # Reset current page counter
+                self.current_page = 0
             except Exception as e:
                 QMessageBox.critical(None, "预览错误", f"无法预览 PDF 文件: {str(e)}")
                 self.preview_scene.clear()
                 self.pdf_document = None
 
-    def next_page(self):
-        """翻到下一页"""
-        if self.pdf_document is not None:
-            if self.current_page < len(self.pdf_document) - 1:
-                self.current_page += 1
-                self.update_preview(None, self.current_page)
-
-    def previous_page(self):
-        """翻到上一页"""
-        if self.pdf_document is not None:
-            if self.current_page > 0:
-                self.current_page -= 1
-                self.update_preview(None, self.current_page)
+    # Remove the next_page and previous_page methods

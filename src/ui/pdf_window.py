@@ -49,13 +49,9 @@ class PDFWindow(QMainWindow):
         self.preview_view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         preview_layout.addWidget(self.preview_view, stretch=3)  # 右侧占3份
 
-        # 添加翻页按钮
-        button_layout = QHBoxLayout()
-        self.prev_button = QPushButton("上一页")
-        self.next_button = QPushButton("下一页")
-        button_layout.addWidget(self.prev_button)
-        button_layout.addWidget(self.next_button)
-        preview_layout.addLayout(button_layout)
+        # Enable scrolling for the QGraphicsView
+        self.preview_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.preview_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         main_layout.addWidget(preview_widget, stretch=3)  # 右侧占3份
 
