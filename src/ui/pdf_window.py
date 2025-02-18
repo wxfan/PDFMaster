@@ -122,7 +122,13 @@ class PDFWindow(QMainWindow):
                 # 转换为 QPixmap
                 qimage = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format.Format_RGBA8888)
                 pixmap = QPixmap.fromImage(qimage)
-                self.preview_widget.set_pixmap(pixmap)
+            
+                # Add pixmap to the scene
+                self.preview_scene.clear()
+                self.preview_scene.addPixmap(pixmap)
+            
+                # Auto-fit to view
+                self.preview_view.fitInView(self.preview_scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
             except Exception as e:
                 QMessageBox.critical(self, "预览错误", f"无法预览 PDF 文件: {str(e)}")
                 self.preview_scene.clear()
