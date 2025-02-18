@@ -21,16 +21,43 @@ class PreviewHandler:
             
                 # If multiple pages, add scrollable view
                 if len(self.pdf_document) > 1:
-                    # Calculate combined size for all pages
-                    x_pos = 0
-                    y_pos = 0
+                    # Calculate combined size for all pages (stacked vertically)
+                    max_page_width = 0
+                    total_page_height = 0
                 
+                    # First pass: calculate cumulative dimensions
                     for page_num in range(len(self.pdf_document)):
                         page = self.pdf_document.load_page(page_num)
                         zoom = 1.0
                         mat = fitz.Matrix(zoom, zoom)
                         pix = page.get_pixmap(matrix=mat)
+                        qimage = QImage(
+                            pix.samples,
+                            pix.width,
+                            pix.height,
+                            pix.stride,
+                            QImage.Format.Format_RGB888
+                        ).rgbSwapped()
+                        pixmap = QPixmap.fromImage(qimage)
                     
+                        # Update max width and total height
+                        max_page_width = max(max_page_width, pixmap.width())
+                        total_page_height += pixmap.height()
+                
+                    # Set scene size to accommodate all pages
+                    self.preview_scene.setSceneRect(
+                        0, 0, 
+                        max_page_width, 
+                        total_page_height
+                    )
+                
+                    # Second pass: add pages to the scene
+                    y_pos = 0
+                    for page_num in range(len(self.pdf_document)):
+                        page = self.pdf_document.load_page(page_num)
+                        zoom = 1.0
+                        mat = fitz.Matrix(zoom, zoom)
+                        pix = page.get_pixmap(matrix=mat)
                         qimage = QImage(
                             pix.samples,
                             pix.width,
@@ -41,16 +68,9 @@ class PreviewHandler:
                         pixmap = QPixmap.fromImage(qimage)
                     
                         # Add each page to the scene with vertical offset
-                        self.preview_scene.addPixmap(pixmap)
-                        x_pos += pixmap.width()
+                        pixmap_item = self.preview_scene.addPixmap(pixmap)
+                        pixmap_item.setPos(0, y_pos)
                         y_pos += pixmap.height()
-                
-                    # Set scene size to accommodate all pages
-                    self.preview_scene.setSceneRect(
-                        0, 0, 
-                        x_pos, 
-                        y_pos
-                    )
                 else:
                     # Single page display
                     page = self.pdf_document.load_page(0)
