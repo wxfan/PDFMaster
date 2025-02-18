@@ -17,8 +17,11 @@ class PreviewHandler:
             self.text_item.setPos(10, 10)
             self.text_item.setZValue(10)
             # Set style
-            self.text_item.setDefaultTextColor(Qt.GlobalColor.white)
-            self.text_item.setTextBackgroundColor(Qt.GlobalColor.black)
+            # Create text format with background
+            text_format = QTextFormat()
+            text_format.setForeground(Qt.GlobalColor.white)
+            text_format.setBackground(Qt.GlobalColor.black)
+            self.text_item.setFormat(text_format)
             self.preview_scene.addItem(self.text_item)
             
     def draw_page_number(self, pixmap, page_number):
