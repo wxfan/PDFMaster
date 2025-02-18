@@ -5,22 +5,27 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QWidget,
     QListWidget,
-    QFileDialog,
-    QMessageBox,
     QGraphicsScene,
-    QGraphicsView
+    QGraphicsView,
+    QPushButton,
+    QVBoxLayout,
+    QSizePolicy
 )
-from PyQt6.QtGui import QImage, QPainter, QPixmap
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QPixmap,QAction,QImage
-import fitz  # type: ignore
+from PyQt6.QtGui import QPainter
+from .menu_bar import create_menu_bar  # 导入新的菜单栏模块
+from src.ui.handlers.preview_handler import PreviewHandler  # 导入新的预览处理模块
+from src.ui.handlers.pdffile_handler import PDFFileHandler  # 导入新的文件处理模块
 
 class PDFWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("PDF 管理器")
-        self.setGeometry(100, 100, 1200, 800)
+        self.resize(1200, 800)
+
+        # 设置窗口最大尺寸为屏幕尺寸，防止超出全屏
+        screen_geometry = QApplication.primaryScreen().geometry()
+        self.setMaximumSize(screen_geometry.width(), screen_geometry.height())
 
         # 创建主布局
         main_widget = QWidget()
@@ -30,117 +35,63 @@ class PDFWindow(QMainWindow):
         # 左侧文件列表区
         self.file_list = QListWidget()
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        main_layout.addWidget(self.file_list, 1)  # 左侧占布局比例
+        self.file_list.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self.file_list.setFixedWidth(200)  # 设置固定宽度
+        main_layout.addWidget(self.file_list)
 
         # 右侧预览区
+        preview_widget = QWidget()
+        preview_layout = QHBoxLayout(preview_widget)
+
         self.preview_scene = QGraphicsScene()
         self.preview_view = QGraphicsView(self.preview_scene)
-        main_layout.addWidget(self.preview_view, 2)  # 右侧占布局比例
+        self.preview_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.preview_view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        preview_layout.addWidget(self.preview_view, stretch=3)  # 右侧占3份
+
+        # 添加翻页按钮
+        button_layout = QHBoxLayout()
+        self.prev_button = QPushButton("上一页")
+        self.next_button = QPushButton("下一页")
+        button_layout.addWidget(self.prev_button)
+        button_layout.addWidget(self.next_button)
+        preview_layout.addLayout(button_layout)
+
+        main_layout.addWidget(preview_widget, stretch=3)  # 右侧占3份
+
+        # 实例化 PreviewHandler 和 PDFFileHandler
+        self.preview_handler = PreviewHandler(self.preview_scene, self.preview_view)
+        self.file_handler = PDFFileHandler(self.file_list)
+
         # 创建菜单栏
         self.create_menu_bar()
 
         # 连接信号
         self.file_list.currentItemChanged.connect(self.update_preview)
+        self.prev_button.clicked.connect(self.preview_handler.previous_page)
+        self.next_button.clicked.connect(self.preview_handler.next_page)
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
-
-        # 文件菜单
-        file_menu = menu_bar.addMenu("文件")
-        self._add_menu_action(file_menu, "添加文件", self.add_files)
-        self._add_menu_action(file_menu, "移除选中", self.remove_files)
-        self._add_menu_action(file_menu, "清空列表", self.clear_list)
-        self._add_menu_action(file_menu, "退出", self.close)
-
-        # 编辑菜单（占位）
-        edit_menu = menu_bar.addMenu("编辑")
-        self._add_menu_action(edit_menu, "合并 PDF", lambda: QMessageBox.information(self, "功能待实现", "合并 PDF 功能尚未实现。"))
-        self._add_menu_action(edit_menu, "拆分 PDF", lambda: QMessageBox.information(self, "功能待实现", "拆分 PDF 功能尚未实现。"))
-        self._add_menu_action(edit_menu, "提取页面", lambda: QMessageBox.information(self, "功能待实现", "提取页面功能尚未实现。"))
-        self._add_menu_action(edit_menu, "旋转页面", lambda: QMessageBox.information(self, "功能待实现", "旋转页面功能尚未实现。"))
-
-        # 安全菜单（占位）
-        security_menu = menu_bar.addMenu("安全")
-        self._add_menu_action(security_menu, "加密文件", lambda: QMessageBox.information(self, "功能待实现", "加密文件功能尚未实现。"))
-        self._add_menu_action(security_menu, "移除密码", lambda: QMessageBox.information(self, "功能待实现", "移除密码功能尚未实现。"))
-        self._add_menu_action(security_menu, "添加水印", lambda: QMessageBox.information(self, "功能待实现", "添加水印功能尚未实现。"))
-
-    def _add_menu_action(self, menu, text, triggered_function, shortcut=None):
-        action = QAction(text, self)
-        if shortcut:
-            action.setShortcut(shortcut)
-        action.triggered.connect(triggered_function)
-        menu.addAction(action)
+        create_menu_bar(menu_bar, self)  # 使用新的菜单栏模块
 
     def add_files(self):
-        file_dialog = QFileDialog()
-        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
-        file_dialog.setNameFilter("PDF 文件 (*.pdf)")
-        if file_dialog.exec():
-            selected_files = file_dialog.selectedFiles()
-            for file_path in selected_files:
-                if file_path not in self.file_list.findItems(file_path, Qt.MatchFlag.MatchExactly):
-                    self.file_list.addItem(file_path)
+        """添加文件到文件列表"""
+        self.file_handler.add_files()
 
     def remove_files(self):
-        selected_items = self.file_list.selectedItems()
-        if not selected_items:
-            QMessageBox.warning(self, "警告", "请先选择一个或多个文件进行删除。")
-            return
-        reply = QMessageBox.question(
-            self,
-            "确认删除",
-            "确定要删除选中的文件吗？",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
-            for item in selected_items:
-                self.file_list.takeItem(self.file_list.row(item))
+        """从文件列表中删除选中的文件"""
+        self.file_handler.remove_files()
 
     def clear_list(self):
-        reply = QMessageBox.question(
-            self,
-            "确认清空",
-            "确定要清空所有文件吗？",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
-            self.file_list.clear()
-            self.preview_scene.clear()
+        """清空文件列表"""
+        self.file_handler.clear_list()
 
-    def update_preview(self, current_item, previous_item):
+    def update_preview(self, current_item):
+        """更新预览区域"""
         if current_item:
             file_path = current_item.text()
-            try:
-                pdf_document = fitz.open(file_path)
-                # 获取第一页
-                page = pdf_document.load_page(0)
-                # 设置缩放比例
-                zoom = 2.0
-                mat = fitz.Matrix(zoom, zoom)
-                pix = page.get_pixmap(matrix=mat)
-            
-                # Convert the pixmap to QImage and then to QPixmap
-                qimage = QImage(
-                    pix.samples,
-                    pix.width,
-                    pix.height,
-                    pix.stride,
-                    QImage.Format.Format_RGB32
-                ).convertToFormat(QImage.Format.Format_RGBA8888)
-            
-                pixmap = QPixmap.fromImage(qimage)
-            
-                # Add pixmap to the scene
-                self.preview_scene.clear()
-                self.preview_scene.addPixmap(pixmap)
-            
-                # Auto-fit to view
-                self.preview_view.fitInView(self.preview_scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
-            
-            except Exception as e:
-                QMessageBox.critical(self, "预览错误", f"无法预览 PDF 文件: {str(e)}")
-                self.preview_scene.clear()
+            self.preview_handler.update_preview(file_path, page_number=0)  # 初始显示第一页
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
