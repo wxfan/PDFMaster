@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QImage, QPixmap, QPainter
-from PyQt6.QtCore import RectF, Qt
+from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtWidgets import QGraphicsTextItem, QMessageBox
 import fitz  # type: ignore
 
