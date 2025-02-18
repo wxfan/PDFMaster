@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QMessageBox, QFileDialog, QInputDialog, QLineEdit,QDialog
+from PyQt6.QtWidgets import QMessageBox, QFileDialog, QInputDialog, QLineEdit, QDialog, QListView
+from src.ui.main_window import MainWindow
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QStandardItem
 import fitz  # type: ignore
@@ -11,13 +12,12 @@ class FileHandler(QObject):
         super().__init__()
         if not main_window:
             raise ValueError("MainWindow instance required")
-        if not file_list_model:
+        if not isinstance(file_list_model, QStandardItemModel):
             raise ValueError("QStandardItemModel instance required")
 
         self.main_window = main_window
         self.file_list_model = file_list_model
         self.preview_manager = self.main_window.preview_container
-  # 确保传入的是视图组件
 
         # 连接信号到槽
         self.fileAdded.connect(self.on_file_added)

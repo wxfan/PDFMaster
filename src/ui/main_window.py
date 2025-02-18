@@ -52,8 +52,9 @@ class MainWindow(QMainWindow):
         # File list setup
 
         # 左侧文件列表区
-        self.file_list_model = QStandardItemModel() 
+        self.file_list_model = QStandardItemModel()
         self.file_list = QListWidget()
+        self.file_list.setModel(self.file_list_model)
         self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         main_layout.addWidget(self.file_list, 1)  # 弹性布局        
         
@@ -70,7 +71,8 @@ class MainWindow(QMainWindow):
 
     def _init_handlers(self):
         """Initialize all event handling handlers"""
-        self.file_handler = FileHandler(self, self.file_list)
+        self.file_handler = FileHandler(self, self.file_list_model)
+        self.file_handler.fileAdded.connect(self._on_file_added)
         self.pdf_processing_handler = PDFProcessingHandler(self)
         self.encryption_handler = EncryptionHandler(self)
         self.preview_handler = PreviewHandler(self)
@@ -116,6 +118,11 @@ class MainWindow(QMainWindow):
             self.preview_handler.update_preview(file_path)
         else:
             self.preview_handler.show_empty_preview()
+
+    def _on_file_added(self):
+        if self.file_list_model.rowCount() > 0:
+            self.file_list.setCurrentRow(0)
+            self.update_preview()
 
 
 def main():
