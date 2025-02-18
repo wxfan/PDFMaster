@@ -12,13 +12,14 @@ class PreviewHandler:
         self.current_page = 0
         self.text_item = None  # For displaying page number
         if self.text_item is None:
-            self.text_item = self.preview_scene.addTextItem("当前页数")
-            self.text_item.setPos(10, 10)  # Position at top-left corner
-            self.text_item.setZValue(10)   # Ensure it's on top
+            self.text_item = QGraphicsTextItem()
+            self.text_item.setPlainText("当前页数")
+            self.text_item.setPos(10, 10)
+            self.text_item.setZValue(10)
             # Set style
             self.text_item.setDefaultTextColor(Qt.GlobalColor.white)
             self.text_item.setTextBackgroundColor(Qt.GlobalColor.black)
-            self.text_item.setTextCursorWidth(1)
+            self.preview_scene.addItem(self.text_item)
             
     def draw_page_number(self, pixmap, page_number):
         """Draw page number on the pixmap"""
