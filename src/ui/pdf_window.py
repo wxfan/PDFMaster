@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QSizePolicy
 )
 from PyQt6.QtGui import QPainter
+from PyQt6.QtCore import Qt  # 导入 Qt 模块
 from .menu_bar import create_menu_bar  # 导入新的菜单栏模块
 from src.ui.handlers.preview_handler import PreviewHandler  # 导入新的预览处理模块
 from src.ui.handlers.pdffile_handler import PDFFileHandler  # 导入新的文件处理模块
