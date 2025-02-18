@@ -119,8 +119,16 @@ class PDFWindow(QMainWindow):
                 zoom = 2.0
                 mat = fitz.Matrix(zoom, zoom)
                 pix = page.get_pixmap(matrix=mat)
-                # 转换为 QPixmap
-                qimage = QImage(pix.samples, pix.width, pix.height, pix.stride, QImage.Format.Format_RGBA8888)
+            
+                # Convert the pixmap to QImage and then to QPixmap
+                qimage = QImage(
+                    pix.samples,
+                    pix.width,
+                    pix.height,
+                    pix.stride,
+                    QImage.Format.Format_RGB32
+                ).convertToFormat(QImage.Format.Format_RGBA8888)
+            
                 pixmap = QPixmap.fromImage(qimage)
             
                 # Add pixmap to the scene
@@ -129,10 +137,9 @@ class PDFWindow(QMainWindow):
             
                 # Auto-fit to view
                 self.preview_view.fitInView(self.preview_scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+            
             except Exception as e:
                 QMessageBox.critical(self, "预览错误", f"无法预览 PDF 文件: {str(e)}")
-                self.preview_scene.clear()
-            else:
                 self.preview_scene.clear()
 
 if __name__ == "__main__":
