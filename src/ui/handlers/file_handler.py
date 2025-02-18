@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMessageBox, QFileDialog, QInputDialog, QLineEdit, QDialog, QListView
 from src.ui.main_window import MainWindow
 from PyQt6.QtCore import QObject, pyqtSignal
-from PyQt6.QtGui import QStandardItem
+from PyQt6.QtGui import QStandardItem, QStandardItemModel
 import fitz  # type: ignore
 from src.core import PDFSecurity
 
