@@ -11,6 +11,14 @@ class PreviewHandler:
         self.pdf_document = None
         self.current_page = 0
         self.text_item = None  # For displaying page number
+        if self.text_item is None:
+            self.text_item = self.preview_scene.addTextItem("Page 0/0")
+            self.text_item.setPos(10, 10)  # Position at top-left corner
+            self.text_item.setZValue(10)   # Ensure it's on top
+            # Set style
+            self.text_item.setDefaultTextColor(Qt.GlobalColor.white)
+            self.text_item.setTextBackgroundColor(Qt.GlobalColor.black)
+            self.text_item.setTextCursorWidth(1)
 
     def update_preview(self, file_path, page_number=0):
         """更新预览区域"""
@@ -67,11 +75,14 @@ class PreviewHandler:
                             QImage.Format.Format_RGB888
                         ).rgbSwapped()
                         pixmap = QPixmap.fromImage(qimage)
-                    
+
                         # Add each page to the scene with vertical offset
                         pixmap_item = self.preview_scene.addPixmap(pixmap)
                         pixmap_item.setPos(0, y_pos)
                         y_pos += pixmap.height()
+
+                    # Connect scroll to update page text
+                    self.preview_view.verticalScrollBar().valueChanged.connect(lambda: self._update_page_text(y_pos, len(self.pdf_document)))
                 else:
                     # Single page display
                     page = self.pdf_document.load_page(0)
@@ -89,6 +100,10 @@ class PreviewHandler:
                     self.preview_scene.addPixmap(pixmap)
                     self.preview_view.setSceneRect(QRectF(pixmap.rect()))
             
+                # Update initial page text
+                if len(self.pdf_document) > 0:
+                    self._update_page_text(0, len(self.pdf_document))
+                
                 # Reset current page counter
                 self.current_page = 0
             except Exception as e:

@@ -66,6 +66,11 @@ class PDFWindow(QMainWindow):
         # 连接信号
         self.file_list.currentItemChanged.connect(self.update_preview)
 
+    def update_menu_bar(self, current_page, total_pages):
+        """更新菜单栏中的当前页面信息"""
+        window_title = f"PDF 管理器 - 当前页面: {current_page}/{total_pages}"
+        self.setWindowTitle(window_title)
+
     def create_menu_bar(self):
         menu_bar = self.menuBar()
         create_menu_bar(menu_bar, self)  # 使用新的菜单栏模块
@@ -87,6 +92,10 @@ class PDFWindow(QMainWindow):
         if current_item:
             file_path = current_item.text()
             self.preview_handler.update_preview(file_path, page_number=0)  # 初始显示第一页
+            # Update menu bar with current page information
+            total_pages = self.preview_handler.pdf_document.page_count if self.preview_handler.pdf_document else 0
+            if total_pages > 0:
+                self.update_menu_bar(1, total_pages)  # Page count starts at 1
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
