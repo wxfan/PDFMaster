@@ -65,8 +65,6 @@ class PDFWindow(QMainWindow):
 
         # 连接信号
         self.file_list.currentItemChanged.connect(self.update_preview)
-        self.prev_button.clicked.connect(self.preview_handler.previous_page)
-        self.next_button.clicked.connect(self.preview_handler.next_page)
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
