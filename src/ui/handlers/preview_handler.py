@@ -10,6 +10,7 @@ class PreviewHandler:
         self.preview_view = preview_view
         self.pdf_document = None
         self.current_page = 0
+        self.text_item = None  # For displaying page number
 
     def update_preview(self, file_path, page_number=0):
         """更新预览区域"""
@@ -94,5 +95,19 @@ class PreviewHandler:
                 QMessageBox.critical(None, "预览错误", f"无法预览 PDF 文件: {str(e)}")
                 self.preview_scene.clear()
                 self.pdf_document = None
+
+    def _update_page_text(self, total_height, total_pages):
+        """更新页面信息文本"""
+        # Get current position
+        current_pos = self.preview_view.verticalScrollBar().value()
+        
+        # Calculate approx current page
+        # This assumes all pages have approximately the same height
+        page_height = total_height / total_pages if total_pages > 0 else 1
+        current_page = current_pos // page_height
+        
+        # Set text
+        if self.text_item:
+            self.text_item.setPlainText(f"Page {current_page + 1}/{total_pages}")
 
     # Remove the next_page and previous_page methods
