@@ -15,7 +15,7 @@ from PyQt6.QtGui import QPainter
 from PyQt6.QtCore import Qt  # 导入 Qt 模块
 from .menu_bar import create_menu_bar  # 导入新的菜单栏模块
 from src.ui.handlers.preview_handler import PreviewHandler  # 导入新的预览处理模块
-from src.ui.handlers.pdffile_handler import PDFFileHandler  # 导入新的文件处理模块
+from src.ui.handlers.addfile_handler import AddFileHandler  # 导入新的文件处理模块
 
 class PDFWindow(QMainWindow):
     def __init__(self):
@@ -58,7 +58,7 @@ class PDFWindow(QMainWindow):
 
         # 实例化 PreviewHandler 和 PDFFileHandler
         self.preview_handler = PreviewHandler(self.preview_scene, self.preview_view)
-        self.file_handler = PDFFileHandler(self.file_list)
+        self.file_handler = AddFileHandler(self.file_list)
 
         # 创建菜单栏
         self.create_menu_bar()
