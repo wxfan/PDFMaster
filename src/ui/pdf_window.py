@@ -91,11 +91,11 @@ class PDFWindow(QMainWindow):
         """更新预览区域"""
         if current_item:
             file_path = current_item.text()
-            self.preview_handler.update_preview(file_path, page_number=0)  # 初始显示第一页
+            self.preview_handler.update_preview(file_path, page_number=0)
             # Update menu bar with current page information
             total_pages = self.preview_handler.pdf_document.page_count if self.preview_handler.pdf_document else 0
             if total_pages > 0:
-                self.update_menu_bar(1, total_pages)  # Page count starts at 1
+                self.update_menu_bar(0, total_pages)  # Page count starts at 0 internally
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
