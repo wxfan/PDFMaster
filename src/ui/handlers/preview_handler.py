@@ -88,7 +88,8 @@ class PreviewHandler:
                             QImage.Format.Format_RGB888
                         ).rgbSwapped()
                         pixmap = QPixmap.fromImage(qimage)
-
+                        # Draw page number on image
+                        self.draw_page_number(pixmap, page_num)
                         # Add each page to the scene with vertical offset
                         pixmap_item = self.preview_scene.addPixmap(pixmap)
                         pixmap_item.setPos(0, y_pos)
