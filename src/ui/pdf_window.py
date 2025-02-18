@@ -106,7 +106,7 @@ class PDFWindow(QMainWindow):
         )
         if reply == QMessageBox.StandardButton.Yes:
             self.file_list.clear()
-            self.preview_widget.set_pixmap(None)
+            self.preview_scene.clear()
 
     def update_preview(self, current_item, previous_item):
         if current_item:
