@@ -29,22 +29,20 @@ class WatermarkDialog(QDialog):
         mode_layout.addWidget(self.image_radio)
         layout.addLayout(mode_layout)
 
-        # Text controls
-        self.text_edit = QLineEdit()
-        self.text_group = QVBoxLayout()
+        # Text controls container
+        self.text_widget = QWidget()
+        self.text_group = QVBoxLayout(self.text_widget)
         self.text_group.addWidget(QLabel("水印文字:"))
         self.text_group.addWidget(self.text_edit)
-        layout.addLayout(self.text_group)
+        layout.addWidget(self.text_widget)
 
-        # Image controls
-        self.image_path = QLineEdit()
-        self.image_browse = QPushButton("选择图片")
-        self.image_browse.clicked.connect(self._browse_image)
-        self.image_group = QVBoxLayout()
+        # Image controls container
+        self.image_widget = QWidget()
+        self.image_group = QVBoxLayout(self.image_widget)
         self.image_group.addWidget(QLabel("水印图片:"))
         self.image_group.addWidget(self.image_path)
         self.image_group.addWidget(self.image_browse)
-        layout.addLayout(self.image_group)
+        layout.addWidget(self.image_widget)
 
         # Position controls
         self.x_pos = QSpinBox()
@@ -83,8 +81,8 @@ class WatermarkDialog(QDialog):
         # Enable/disable controls based on mode
         def _update_groups():
             show_text = self.text_radio.isChecked()
-            self.text_group.setHidden(not show_text)
-            self.image_group.setHidden(show_text)
+            self.text_widget.setHidden(not show_text)
+            self.image_widget.setHidden(show_text)
         
         self.text_radio.toggled.connect(_update_groups)
         self.image_radio.toggled.connect(_update_groups)
