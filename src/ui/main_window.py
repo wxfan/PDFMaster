@@ -1,25 +1,23 @@
 # main_window.py
-from PyQt6.QtWidgets import (QMainWindow, QListWidget, QLabel, QVBoxLayout
-,QWidget, QScrollArea, QFileDialog, QMessageBox,QProgressDialog,QHBoxLayout
-, QApplication,QInputDialog,QLineEdit,QDialog,QSizePolicy)
+from PyQt6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QWidget, 
+                             QLabel, QLineEdit, QInputDialog, QHBoxLayout, 
+                             QScrollArea, QDialog,QSizePolicy)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QImage, QPixmap
-import fitz # type:ignore
+from PyQt6.QtWidgets import QApplication, QMessageBox, QFileDialog, QProgressDialog
+import fitz  # type:ignore
 import os
-
+from src.ui.handlers.preview_handler import update_preview
 from src.core.pdf_processor import PDFProcessor
 from src.ui.dialogs import ExtractDialog, SplitDialog, WatermarkDialog
-from .menu_bar import MenuBar  # Import the MenuBar class
+from src.ui.menu_bar import MenuBar  # Import the update_preview function
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PDF 处理工具")
-        self.setGeometry(100, 100, 800, 600)
 
-        # Initialize file list widget
+        # Initialize file list
         self.file_list = QListWidget()
-        self.file_list.itemSelectionChanged.connect(self._update_preview)
         self.file_list.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         self.file_list.setFixedWidth(200)  # 设置固定宽
 
@@ -45,60 +43,12 @@ class MainWindow(QMainWindow):
         # Create menus using MenuBar class
         self.menu_bar = MenuBar(self)
 
+        # Connect signals and slots
+        self.file_list.itemSelectionChanged.connect(self._update_preview)
+
     def _update_preview(self):
         """更新 PDF 预览"""
-        # 获取当前选中的文件
-        selected_items = self.file_list.selectedItems()
-        if selected_items:
-            file_path = selected_items[0].text()
-            try:
-                # 清除之前的预览
-                while self.preview_layout.count():
-                    item = self.preview_layout.takeAt(0)
-                    widget = item.widget()
-                    if widget:
-                        widget.deleteLater()
-
-                # 打开 PDF 文件
-                with fitz.open(file_path) as doc:
-                    for page_num in range(len(doc)):
-                        page = doc.load_page(page_num)
-                        pix = page.get_pixmap(dpi=96)
-
-                        # 创建图片标签
-                        image_label = QLabel()
-                        image = QImage(
-                            pix.samples,
-                            pix.width,
-                            pix.height,
-                            QImage.Format.Format_RGB888
-                        )
-                        pixmap = QPixmap.fromImage(image)
-
-                        # 添加页码
-                        page_label = QLabel(f"第 {page_num + 1} 页")
-                        page_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        page_label.setStyleSheet("font-size: 14px; font-weight: bold;")
-
-                        # 添加到布局
-                        image_label.setPixmap(pixmap.scaled(
-                            500, 700,
-                            Qt.AspectRatioMode.KeepAspectRatio,
-                            Qt.TransformationMode.SmoothTransformation
-                        ))
-                        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        self.preview_layout.addWidget(image_label)
-                        self.preview_layout.addWidget(page_label)
-
-            except Exception as e:
-                error_label = QLabel("无法预览文件")
-                error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.preview_layout.addWidget(error_label)
-                print(f"预览 PDF 出错: {str(e)}")
-        else:
-            empty_label = QLabel("请选择 PDF 文件进行预览")
-            empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.preview_layout.addWidget(empty_label)
+        update_preview(self.file_list, self.preview_layout)
 
     def _show_password_dialog(self):
         """
@@ -305,7 +255,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     import sys
-    from PyQt6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")  # 设置跨平台样式
