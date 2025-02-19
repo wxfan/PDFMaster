@@ -15,6 +15,8 @@ from src.ui.menu_bar import MenuBar  # Import the update_preview function
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowTitle("PDF 处理工具")
+        self.setGeometry(100, 100, 1000, 800)
 
         # Initialize file list
         self.file_list = QListWidget()
