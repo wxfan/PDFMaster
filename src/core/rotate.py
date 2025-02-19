@@ -15,25 +15,23 @@ def rotate_pdfs(input_path: str, output_path: str, rotate_by: int = 90) -> bool:
         # Open the PDF file
         doc = fitz.open(input_path)
         
-        # Rotate all pages
-        try:
-            doc.rotateAllPages(rotate_by)
-        except Exception as e:
-            raise RuntimeError(f"旋转失败: {str(e)}")
+        # 遍历所有页面进行旋转
+        for page in doc:
+            page.rotate(rotate_by)
 
-        # Handle page sizing for 90/270 degree rotations
+        # 处理 90 和 270 度旋转时的页面尺寸调整
         if rotate_by in [90, 270]:
-            # Get dimensions from the first page
-            page = doc[0]
-            rect = page.rect
+            # 获取第一页面的尺寸进行调整
+            first_page = doc[0]
+            rect = first_page.rect
             if rotate_by == 90:
                 new_rect = fitz.Rect(0, 0, rect.height, rect.width)
             else:  # 270
                 new_rect = fitz.Rect(0, 0, rect.width, rect.height)
             
-            # Update dimensions for all pages
+            # 遍历所有页面进行尺寸调整
             for page in doc:
-                page.set_contents(page.get_contents(), rect=new_rect)
+                page.set_rect(new_rect)
 
         # Save the modified PDF
         doc.save(output_path)
