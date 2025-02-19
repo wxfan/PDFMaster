@@ -9,7 +9,6 @@ import fitz  # type:ignore
 import os
 from src.ui.handlers.preview_handler import update_preview
 from src.core import *
-from src.ui.dialogs import ExtractDialog, SplitDialog, WatermarkDialog
 from src.ui.menu_bar import MenuBar  # Import the update_preview function
 from src.ui.handlers.encrypt_handler import encrypt_handler
 from src.ui.handlers.decrypt_handler import decrypt_handler
@@ -17,7 +16,7 @@ from src.ui.handlers.extract_handler import extract_handler
 from src.ui.handlers.split_handler import split_handler
 from src.ui.handlers.watermark_handler import watermark_handler
 from src.ui.handlers.merge_handler import merge_handler
-
+from src.ui.handlers.rotate_handler import rotate_handler
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -108,6 +107,10 @@ class MainWindow(QMainWindow):
     # Updated to call the new function in extract_pages module
     def _extract_pages(self):
         extract_handler(self)
+    
+    # rorate_files method remains unchanged
+    def _rotate_files(self):
+        rotate_handler(self)
 
     # Updated to call the new function in encrypt_current_file module
     def _encrypt_current_file(self):
