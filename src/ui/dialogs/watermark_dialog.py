@@ -9,7 +9,8 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QDoubleSpinBox,
     QDialogButtonBox,
-    QFileDialog
+    QFileDialog,
+    QWidget
 )
 
 class WatermarkDialog(QDialog):
