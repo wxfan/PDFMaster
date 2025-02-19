@@ -1,78 +1,49 @@
-from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QMenuBar, QScrollArea, QVBoxLayout,
-    QListWidget, QLabel, QFileDialog, QMessageBox, QProgressDialog,
-    QCheckBox, QDialog, QInputDialog, QLineEdit
-)
-import os
+# main_window.py
+from PyQt6.QtWidgets import (QMainWindow, QListWidget, QLabel, QVBoxLayout
+,QWidget, QScrollArea, QFileDialog, QMessageBox,QProgressDialog,QHBoxLayout
+, QApplication,QInputDialog,QLineEdit,QDialog,QSizePolicy)
 from PyQt6.QtCore import Qt
-from src.ui.dialogs import SplitDialog, ExtractDialog, WatermarkDialog
+from PyQt6.QtGui import QImage, QPixmap
+import fitz # type:ignore
+import os
 
-import fitz  # type: ignore
-from PyQt6.QtGui import QIcon, QImage, QPixmap
 from src.core.pdf_processor import PDFProcessor
+from src.ui.dialogs import ExtractDialog, SplitDialog, WatermarkDialog
+from .menu_bar import MenuBar  # Import the MenuBar class
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PDFMaster - PDF 文档处理工具")
-        self.resize(1200, 800)
-        self.setWindowIcon(QIcon(":/icons/app_icon.png"))
+        self.setWindowTitle("PDF 处理工具")
+        self.setGeometry(100, 100, 800, 600)
 
-        # Create main layout
-        main_layout = QHBoxLayout()
-
-        # Initialize UI components
-        self.merge_bookmarks = QCheckBox("保留书签", self)
-
-        # Left panel - File list
+        # Initialize file list widget
         self.file_list = QListWidget()
-        self.file_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.file_list.itemSelectionChanged.connect(self._update_preview)
-        
-        # Create menu bar
-        self._create_menus()
+        self.file_list.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self.file_list.setFixedWidth(200)  # 设置固定宽
 
-        # Add widgets to layout
-        main_layout.addWidget(self.file_list, stretch=1)
+        # Initialize preview area
+        self.preview_layout = QVBoxLayout()
+        self.preview_widget = QWidget()
+        self.preview_widget.setLayout(self.preview_layout)
 
-        # Right panel - Preview area
-        self.scroll_area = QScrollArea()
-        self.preview_container = QWidget()
-        self.preview_layout = QVBoxLayout(self.preview_container)
-        self.preview_layout.setSpacing(10)
-        self.preview_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        self.scroll_area.setWidget(self.preview_container)
-        self.scroll_area.setWidgetResizable(True)
-        main_layout.addWidget(self.scroll_area, stretch=3)
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(self.preview_widget)
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        # Set layout
-        widget = QWidget()
-        widget.setLayout(main_layout)
-        self.setCentralWidget(widget)
+        # Main layout
+        main_layout = QHBoxLayout()
+        main_layout.addWidget(self.file_list)
+        main_layout.addWidget(scroll_area)
 
-    def _create_menus(self):
-        """Create the menu bar and its actions"""
-        menubar = self.menuBar()
+        container = QWidget()
+        container.setLayout(main_layout)
+        self.setCentralWidget(container)
 
-        # File menu
-        file_menu = menubar.addMenu("文件")
-        file_menu.addAction("添加文件", self._add_files)
-        file_menu.addAction("移除选中", self._remove_files)
-        file_menu.addAction("清空列表", lambda: self.file_list.clear())
-        file_menu.addAction("退出", self.close)
-        file_menu.addAction("加密当前文件", self._encrypt_current_file)  # 新增
-
-        # Edit menu
-        edit_menu = menubar.addMenu("编辑")
-        process_menu = edit_menu.addMenu("PDF 处理")
-
-        # PDF Processing Menu Items
-        process_menu.addAction("合并 PDF", self._merge_files)
-        process_menu.addAction("拆分 PDF", self._split_files)
-        process_menu.addAction("提取页面", self._extract_pages)
-        process_menu.addAction("添加水印", self._add_watermark)
-
+        # Create menus using MenuBar class
+        self.menu_bar = MenuBar(self)
 
     def _update_preview(self):
         """更新 PDF 预览"""
@@ -103,16 +74,19 @@ class MainWindow(QMainWindow):
                             QImage.Format.Format_RGB888
                         )
                         pixmap = QPixmap.fromImage(image)
-                        
+
                         # 添加页码
                         page_label = QLabel(f"第 {page_num + 1} 页")
                         page_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                         page_label.setStyleSheet("font-size: 14px; font-weight: bold;")
 
                         # 添加到布局
-                        image_label.setPixmap(pixmap)
-                        image_label.setFixedSize(500, 700)  # 固定大小以便更好缩放
-                        image_label.setScaledContents(True)
+                        image_label.setPixmap(pixmap.scaled(
+                            500, 700,
+                            Qt.AspectRatioMode.KeepAspectRatio,
+                            Qt.TransformationMode.SmoothTransformation
+                        ))
+                        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                         self.preview_layout.addWidget(image_label)
                         self.preview_layout.addWidget(page_label)
 
@@ -134,10 +108,7 @@ class MainWindow(QMainWindow):
         dialog = QInputDialog(self)
         dialog.setWindowTitle('输入密码')
         dialog.setLabelText('请输入加密密码：')
-        
-        # 设置输入模式为密码模式
-        dialog.setTextEchoMode(QLineEdit.EchoMode.Password)  # Corrected line
-        
+        dialog.setTextEchoMode(QLineEdit.EchoMode.Password)
         dialog.resize(300, 150)  # 设置窗口大小
 
         ok = dialog.exec()
@@ -277,7 +248,7 @@ class MainWindow(QMainWindow):
 
         selected_item = self.file_list.currentItem().text()
         password = self._show_password_dialog()
-        
+
         if password is None:
             return
 
@@ -303,15 +274,13 @@ class MainWindow(QMainWindow):
         if not settings.get("text") and not settings.get("image"):
             QMessageBox.warning(self, "警告", "请配置水印内容")
             return
-        
-
 
         input_path = self.file_list.item(0).text()
         output_dir = QFileDialog.getExistingDirectory(self, "选择输出目录")
 
         if not output_dir:
             return
-        
+
         doc = fitz.open(input_path)
         if doc.page_count == 0:  # 👈 新增有效性检查
             raise ValueError("PDF文件为空或损坏，无法处理")
