@@ -31,20 +31,20 @@ class WatermarkDialog(QDialog):
 
         # Text controls
         self.text_edit = QLineEdit()
-        text_group = QVBoxLayout()
-        text_group.addWidget(QLabel("水印文字:"))
-        text_group.addWidget(self.text_edit)
-        layout.addLayout(text_group)
+        self.text_group = QVBoxLayout()
+        self.text_group.addWidget(QLabel("水印文字:"))
+        self.text_group.addWidget(self.text_edit)
+        layout.addLayout(self.text_group)
 
         # Image controls
         self.image_path = QLineEdit()
         self.image_browse = QPushButton("选择图片")
         self.image_browse.clicked.connect(self._browse_image)
-        image_group = QVBoxLayout()
-        image_group.addWidget(QLabel("水印图片:"))
-        image_group.addWidget(self.image_path)
-        image_group.addWidget(self.image_browse)
-        layout.addLayout(image_group)
+        self.image_group = QVBoxLayout()
+        self.image_group.addWidget(QLabel("水印图片:"))
+        self.image_group.addWidget(self.image_path)
+        self.image_group.addWidget(self.image_browse)
+        layout.addLayout(self.image_group)
 
         # Position controls
         self.x_pos = QSpinBox()
@@ -81,8 +81,16 @@ class WatermarkDialog(QDialog):
         layout.addWidget(button_box)
 
         # Enable/disable controls based on mode
-        self.text_radio.toggled.connect(lambda: text_group.setEnabled(self.text_radio.isChecked()))
-        self.image_radio.toggled.connect(lambda: image_group.setEnabled(self.image_radio.isChecked()))
+        def _update_groups():
+            show_text = self.text_radio.isChecked()
+            self.text_group.setHidden(not show_text)
+            self.image_group.setHidden(show_text)
+        
+        self.text_radio.toggled.connect(_update_groups)
+        self.image_radio.toggled.connect(_update_groups)
+        
+        # Initialize with text mode visible
+        _update_groups()
 
     def _browse_image(self):
         file_path, _ = QFileDialog.getOpenFileName(
