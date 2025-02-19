@@ -30,12 +30,16 @@ def add_watermark(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        with fitz.open(input_path) as doc:
-            total_pages = doc.page_count
-            if total_pages == 0:
-                raise ValueError("The PDF document is empty or damaged")
+        # Enhanced opening of PDF with additional parameters
+        doc = fitz.open(input_path, noWarn=True, is_extractable=True)
+        
+        # Check if document is valid and has pages
+        if doc is None or doc.page_count == 0:
+            raise ValueError("PDF 文件为空或已损坏，请检查文件并重试")
 
-            for page_num in range(total_pages):
+        # Process each page with error handling
+        for page_num in range(doc.page_count):
+            try:
                 page = doc.load_page(page_num)
                 rect = page.rect
 
@@ -74,17 +78,22 @@ def add_watermark(
                 combined_page.show_pdf_page(rect, doc, page_num)
                 combined_page.show_pdf_page(rect, overlay)
 
-                # Save the modified page
-                output_path = os.path.join(
-                    output_dir,
-                    f"page_{page_num + 1:03d}_watermarked.pdf"
-                )
-                new_doc = fitz.open()
-                new_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
-                new_doc.save(output_path)
-                new_doc.close()
+                # Add the combined page to the modified document
+                doc.insert_page(-1, combined_page)
 
+            except Exception as page_error:
+                print(f"页面 {page_num + 1} 处理失败: {str(page_error)}")
+                continue
+
+        # Save the modified document
+        output_path = os.path.join(output_dir, "watermarked.pdf")
+        doc.save(output_path)
+        doc.close()
+
+    except ValueError as ve:
+        print(f"无效操作: {str(ve)}")
+        raise
     except Exception as e:
-        # Log any exceptions to help with debugging
-        print(f"Error adding watermark: {str(e)}")
+        # Detailed error logging
+        print(f"添加水印失败: {str(e)}")
         raise
