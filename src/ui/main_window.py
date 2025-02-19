@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QApplication, QMessageBox, QFileDialog, QProgressDia
 import fitz  # type:ignore
 import os
 from src.ui.handlers.preview_handler import update_preview
-from src.core.pdf_processor import PDFProcessor
+from src.core import *
 from src.ui.dialogs import ExtractDialog, SplitDialog, WatermarkDialog
 from src.ui.menu_bar import MenuBar  # Import the update_preview function
 
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
                     password = self._show_password_dialog()
                     if password is None:
                         continue  # 用户取消操作
-                    if not PDFProcessor.verify_password(file_path, password):
+                    if not verify_password(file_path, password):
                         QMessageBox.critical(self, '错误', '密码错误，请重试！')
                         continue
                 except Exception as e:
@@ -122,7 +122,7 @@ class MainWindow(QMainWindow):
 
         # 执行合并
         try:
-            PDFProcessor.merge_pdfs(file_list, output_path, self.merge_bookmarks.isChecked())
+            merge_pdfs(file_list, output_path, self.merge_bookmarks.isChecked())
             QMessageBox.information(self, "成功", "文件合并完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"合并失败: {str(e)}")
@@ -158,7 +158,7 @@ class MainWindow(QMainWindow):
             return not progress_dialog.wasCanceled()
 
         try:
-            PDFProcessor.split_pdf(input_path, output_dir, mode, page_range, update_progress)
+            split_pdf(input_path, output_dir, mode, page_range, update_progress)
             QMessageBox.information(self, "成功", "文件拆分完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"拆分失败: {str(e)}")
@@ -185,7 +185,7 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            PDFProcessor.extract_pages(input_path, output_path, page_range)
+            extract_pages(input_path, output_path, page_range)
             QMessageBox.information(self, "成功", "页面提取完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"提取失败: {str(e)}")
@@ -204,7 +204,7 @@ class MainWindow(QMainWindow):
 
         output_path = os.path.splitext(selected_item)[0] + "_encrypted.pdf"
         try:
-            PDFProcessor.encrypt_pdf(selected_item, output_path, password)
+            encrypt_pdf(selected_item, output_path, password)
             QMessageBox.information(self, '成功', f'文件已加密保存为：{output_path}')
         except Exception as e:
             QMessageBox.critical(self, '错误', f'加密失败: {str(e)}')
@@ -236,7 +236,7 @@ class MainWindow(QMainWindow):
             raise ValueError("PDF文件为空或损坏，无法处理")
         print(settings)
         try:
-            PDFProcessor.add_watermark(
+            add_watermark(
                 input_path=input_path,
                 output_dir=output_dir,
                 watermark_text=settings.get("text"),
