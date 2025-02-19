@@ -5,6 +5,8 @@ from src.core.watermark import add_watermark
 from src.core.password import verify_password
 from src.core.encrypt import encrypt_pdf
 from src.core.extract import extract_pages
+from src.core.decrypt import decrypt_pdf
+
 
 __all__ = [
     'merge_pdfs',
@@ -12,5 +14,6 @@ __all__ = [
     'add_watermark',
     'verify_password',
     'encrypt_pdf',
-    'extract_pages'
+    'extract_pages',
+    'decrypt_pdf',
 ]

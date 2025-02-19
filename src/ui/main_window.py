@@ -12,10 +12,12 @@ from src.core import *
 from src.ui.dialogs import ExtractDialog, SplitDialog, WatermarkDialog
 from src.ui.menu_bar import MenuBar  # Import the update_preview function
 from src.ui.handlers.encrypt_handler import encrypt_handler
+from src.ui.handlers.decrypt_handler import decrypt_handler
 from src.ui.handlers.extract_handler import extract_handler
 from src.ui.handlers.split_handler import split_handler
 from src.ui.handlers.watermark_handler import watermark_handler
 from src.ui.handlers.merge_handler import merge_handler
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -96,24 +98,28 @@ class MainWindow(QMainWindow):
 
     def _merge_files(self):
         """合并文件逻辑"""
-        merge_handler.merge_files(self)  # Call the new merge_files function
+        merge_handler(self)  # Call the new merge_files function
 
 
     # Updated to call the new function in split_files module
     def _split_files(self):
-        split_handler.split_files(self)
+        split_handler(self)
 
     # Updated to call the new function in extract_pages module
     def _extract_pages(self):
-        extract_handler.extract_pages(self)
+        extract_handler(self)
 
     # Updated to call the new function in encrypt_current_file module
     def _encrypt_current_file(self):
-        encrypt_handler.encrypt_current_file(self)
+        encrypt_handler(self)
+
+    def _decrypt_current_file(self):
+        decrypt_handler(self)
+
 
     # Updated to call the new function in add_watermark module
     def _add_watermark(self):
-        watermark_handler.add_watermark(self)
+        watermark_handler(self)
 
 if __name__ == "__main__":
     import sys
