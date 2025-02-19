@@ -1,5 +1,6 @@
 # src/ui/decrypt_current_file.py
 import fitz  # type: ignore
+from fitz import mupdf_errors  # type: ignore
 
 def decrypt_pdf(input_path, output_path, password, owner_password=None):
     """
