@@ -28,3 +28,16 @@ class MenuBar:
         security_menu.addAction("解密", self.main_window._decrypt_current_file)
         security_menu.addAction("添加水印", self.main_window._add_watermark)
 
+        # 智能功能菜单
+        smart_menu = menubar.addMenu("智能")
+        smart_menu.addAction("总结", self.main_window.summary_text)
+        smart_menu.addAction("翻译", self.main_window.translate_text)
+        smart_menu.addAction("提取文本", self.main_window.extract_text)
+        smart_menu.addAction("OCR", self.main_window.perform_ocr)
+        smart_menu.addAction("设置", self.main_window.settings_llm)
+
+
+
+
+
+
