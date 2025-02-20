@@ -1,6 +1,6 @@
 # src/ui/llmsettings_handler.py
-from PyQt6.QtWidgets import QProgressDialog, QMessageBox, QFileDialog, QDialog
-from src.ui.handlers.llmsettings_handler import llmsettings_handler
+from PyQt6.QtWidgets import QMessageBox, QDialog
+from src.ui.dialogs.llmsettings_dialog import LLMSettingsDialog
 from PyQt6.QtCore import Qt
 import fitz # type: ignore
 
