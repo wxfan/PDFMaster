@@ -34,7 +34,7 @@ class MenuBar:
         smart_menu.addAction("翻译", self.main_window.translate_text)
         smart_menu.addAction("提取文本", self.main_window.extract_text)
         smart_menu.addAction("OCR", self.main_window.perform_ocr)
-        smart_menu.addAction("设置", self.main_window.settings_llm)
+        smart_menu.addAction("配置LLM", llmsettings_handler)  # Added LLM settings action
 
 
 
