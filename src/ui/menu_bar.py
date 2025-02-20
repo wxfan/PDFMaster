@@ -30,11 +30,11 @@ class MenuBar:
 
         # 智能功能菜单
         smart_menu = menubar.addMenu("智能")
-        smart_menu.addAction("总结", self.main_window.summary_text)
-        smart_menu.addAction("翻译", self.main_window.translate_text)
-        smart_menu.addAction("提取文本", self.main_window.extract_text)
-        smart_menu.addAction("OCR", self.main_window.perform_ocr)
-        smart_menu.addAction("配置LLM", llmsettings_handler)  # Added LLM settings action
+        smart_menu.addAction("总结", self.main_window._summary_text)
+        # smart_menu.addAction("翻译", self.main_window.translate_text)
+        # smart_menu.addAction("提取文本", self.main_window.extract_text)
+        # smart_menu.addAction("OCR", self.main_window.perform_ocr)
+        smart_menu.addAction("配置LLM", self.main_window.settings_llm)  # Added LLM settings action
 
 
 

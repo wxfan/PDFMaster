@@ -1,10 +1,9 @@
 # main_window.py
-from PyQt6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QWidget, 
-                             QLabel, QLineEdit, QInputDialog, QHBoxLayout, 
-                             QScrollArea, QDialog,QSizePolicy)
+from PyQt6.QtWidgets import (QMainWindow, QListWidget, QVBoxLayout, QWidget,  QHBoxLayout, 
+                             QScrollArea, QSizePolicy)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import QApplication, QMessageBox, QFileDialog, QProgressDialog
+from PyQt6.QtWidgets import QApplication, QMessageBox, QFileDialog
 import fitz  # type:ignore
 import os
 from src.ui.handlers.preview_handler import update_preview
@@ -17,6 +16,9 @@ from src.ui.handlers.split_handler import split_handler
 from src.ui.handlers.watermark_handler import watermark_handler
 from src.ui.handlers.merge_handler import merge_handler
 from src.ui.handlers.rotate_handler import rotate_handler
+from src.ui.handlers.translate_handler import translate_handler
+from src.ui.handlers.summary_handler import summary_handler
+from src.ui.handlers.llmsettings_handler import llmsettings_handler
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -123,6 +125,14 @@ class MainWindow(QMainWindow):
     # Updated to call the new function in add_watermark module
     def _add_watermark(self):
         watermark_handler(self)
+    
+    def settings_llm(self):
+        llmsettings_handler(self)
+
+    def _summary_text(self):
+        summary_handler(self)
+
+
 
 if __name__ == "__main__":
     import sys
