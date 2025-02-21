@@ -15,5 +15,5 @@ __all__ = [
     'verify_password',
     'encrypt_pdf',
     'extract_pages',
-    'decrypt_pdf',
+    'decrypt_pdf'
 ]

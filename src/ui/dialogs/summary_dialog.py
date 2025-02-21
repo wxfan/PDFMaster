@@ -7,7 +7,8 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QDialogButtonBox,
     QScrollArea,
-    QTextEdit
+    QTextEdit,
+    QWidget
 )
 
 class SummaryDialog(QDialog):
