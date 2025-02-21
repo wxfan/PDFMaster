@@ -1,58 +1,81 @@
 import re
-from PyQt6.QtWidgets import QProgressDialog, QMessageBox, QFileDialog, QDialog
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (QProgressDialog, QMessageBox, QFileDialog, 
+                            QDialog, QDialogButtonBox, QWidget)
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject
 import fitz  # type: ignore
 from src.core.summary import summary_text
 from src.ui.dialogs.summary_dialog import SummaryDialog
 
+class SummaryGenerator(QObject):
+    update = pyqtSignal(str)
+    complete = pyqtSignal(str)
+    error = pyqtSignal(str)
+
+    def __init__(self, selected_files, llm_settings):
+        super().__init__()
+        self.selected_files = selected_files
+        self.llm_settings = llm_settings
+
+    def run(self):
+        try:
+            generator = summary_text(
+                self.selected_files,
+                self.llm_settings["api_key"],
+                self.llm_settings["base_url"],
+                self.llm_settings["model"],
+                self.llm_settings.get("temperature", 0.7),
+                stream=True
+            )
+            
+            complete_summary = ""
+            for chunk in generator:
+                complete_summary += chunk
+                self.update.emit(chunk)
+            
+            self.complete.emit(complete_summary)
+            
+        except Exception as e:
+            self.error.emit(str(e))
 
 def summary_handler(main_window):
-    # Check if any files are selected
     if not main_window.file_list.selectedItems():
         QMessageBox.warning(main_window, "警告", "请先选择要处理的 PDF 文件")
         return
     
-    # Get selected PDF files
     selected_files = [
         main_window.file_list.item(i).text() 
         for i in range(main_window.file_list.count())
         if main_window.file_list.item(i).isSelected()
     ]
 
-    print(f"Selected files: {selected_files}")  # Debugging line to print selected files
-
-    
-    # Get LLM settings from main window
     llm_settings = main_window.gettings_llm()
     
-    # Add validation for required settings
     if not llm_settings.get("api_key"):
         QMessageBox.warning(main_window, "警告", "请先配置LLM API密钥")
         return
-    
-    print(f"LLM Settings: {llm_settings}")  # Debugging line to print LLM settings
 
-    
+    progress_dialog = QProgressDialog("生成摘要中...", "取消", 0, 0, main_window)
+    progress_dialog.setCancelButton(None)
+    progress_dialog.show()
+
     try:
-        # Generate summary
-        summary_result = summary_text(selected_files, 
-                                    llm_settings["api_key"], 
-                                    llm_settings["base_url"], 
-                                    llm_settings["model"], 
-                                    llm_settings.get("temperature", 0.7))
-        
-        # Check if summary is empty
-        if not summary_result:
-            QMessageBox.warning(main_window, "警告", "生成的摘要为空")
-        else:
-            # Save summary to file if user chooses to do so
-            print("summary_result:", summary_result)
-
-        # Show summary dialog
+        summary_generator = SummaryGenerator(selected_files, llm_settings)
         summary_dialog = SummaryDialog(main_window)
-        summary_dialog.set_summary(summary_result)
-        summary_dialog.exec()
+
+        summary_generator.update.connect(summary_dialog.append_to_summary)
+        summary_generator.complete.connect(
+            lambda s: (summary_dialog.set_summary(s), progress_dialog.close())
+        )
+        summary_generator.error.connect(
+            lambda e: (progress_dialog.close(),
+                       QMessageBox.critical(main_window, "错误", f"生成摘要失败: {e}"))
+        )
+
+        import threading
+        thread = threading.Thread(target=summary_generator.run)
+        thread.start()
         
     except Exception as e:
+        progress_dialog.close()
         QMessageBox.critical(main_window, "错误", f"生成摘要失败: {str(e)}")
 
