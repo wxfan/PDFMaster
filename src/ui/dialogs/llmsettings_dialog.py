@@ -49,6 +49,23 @@ class LLMSettingsDialog(QDialog):
         model_layout.addWidget(self.model_edit)
         layout.addWidget(model_section)
 
+        # Temperature control
+        temp_section = QWidget()
+        temp_layout = QHBoxLayout()
+        temp_section.setLayout(temp_layout)
+        
+        temp_label = QLabel("温度 (控制创造力):")
+        self.temperature_slider = QSpinBox()
+        self.temperature_slider.setRange(0, 100)
+        self.temperature_slider.setSingleStep(10)
+        self.temperature_slider.setSuffix(" %")
+        self.temperature_slider.setValue(70)  # Default to 0.7
+        
+        temp_layout.addWidget(temp_label)
+        temp_layout.addWidget(self.temperature_slider)
+        
+        layout.insertWidget(3, temp_section)
+
         # Add Buttons
         button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
