@@ -129,7 +129,12 @@ class MainWindow(QMainWindow):
     def _add_watermark(self):
         watermark_handler(self)
     
-    def settings_llm(self):        
+    def settings_llm(self):   
+        llmsettings_handler(self)     
+        settings = LLMSettings.load()
+        return settings
+    
+    def gettings_llm(self):      
         settings = LLMSettings.load()
         return settings
 

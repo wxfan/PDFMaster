@@ -30,7 +30,7 @@ def summary_text(pdf_paths, api_key, base_url, model, temperature=0.7):
          "messages": [
              {
                  "role": "user",
-                 "content": f"Please summarize the following PDF content:\n\n{pdf_text[:8000]}"  # limit to ~8KB
+                 "content": f"请使用中文总结如下的PDF内容:\n\n{pdf_text[:8000]}"  # limit to ~8KB
              }
          ],
          "temperature": temperature

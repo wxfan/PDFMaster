@@ -23,7 +23,7 @@ def summary_handler(main_window):
 
     
     # Get LLM settings from main window
-    llm_settings = main_window.settings_llm()
+    llm_settings = main_window.gettings_llm()
     
     # Add validation for required settings
     if not llm_settings.get("api_key"):
