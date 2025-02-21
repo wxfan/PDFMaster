@@ -1,18 +1,9 @@
 from pathlib import Path
 import fitz  # type:ignore
-
-from io import BytesIO
-from PIL import Image, ImageEnhance
-import os
-
-import requests
-
- # updates to src/core/summary.py
 import requests
 from typing import Generator
 
 def summary_text(pdf_paths, api_key, base_url, model, temperature=0.7, stream=False):
-    # Extract text from PDF files
     pdf_text = ""
     for pdf_path in pdf_paths:
         with fitz.open(pdf_path) as doc:
@@ -48,18 +39,18 @@ def summary_text(pdf_paths, api_key, base_url, model, temperature=0.7, stream=Fa
         response.raise_for_status()
 
         if stream:
-            # Yield each chunk as it arrives
             for chunk in response.iter_lines(chunk_size=8192):
                 if chunk:
                     try:
                         chunk_text = chunk.decode('utf-8').replace('data: ', '')
+                        print(f"Handling chunk: {chunk_text[:200]}")  # Debugging line
                         if chunk_text.strip() == '[DONE]':
                             break
                         yield chunk_text
-                    except:
+                    except Exception as e:
+                        print(f"Error processing chunk: {e}")  # Debugging line
                         continue
         else:
-            # Return complete response for non-streaming
             return response.json()["choices"][0]["message"]["content"]
 
     except Exception as e:

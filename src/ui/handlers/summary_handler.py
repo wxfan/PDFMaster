@@ -1,8 +1,7 @@
-import re
+import threading
 from PyQt6.QtWidgets import (QProgressDialog, QMessageBox, QFileDialog, 
                             QDialog, QDialogButtonBox, QWidget)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QObject
-import fitz  # type: ignore
 from src.core.summary import summary_text
 from src.ui.dialogs.summary_dialog import SummaryDialog
 
@@ -29,13 +28,15 @@ class SummaryGenerator(QObject):
             
             complete_summary = ""
             for chunk in generator:
+                print(f"Received chunk: {chunk[:200]}")  # Debugging line
                 complete_summary += chunk
                 self.update.emit(chunk)
             
             self.complete.emit(complete_summary)
+            print("Summary generation complete.")  # Debugging line
             
         except Exception as e:
-            self.error.emit(str(e))
+            self.error.emit(f"Summary generation error: {str(e)}")
 
 def summary_handler(main_window):
     if not main_window.file_list.selectedItems():
@@ -71,11 +72,9 @@ def summary_handler(main_window):
                        QMessageBox.critical(main_window, "错误", f"生成摘要失败: {e}"))
         )
 
-        import threading
         thread = threading.Thread(target=summary_generator.run)
         thread.start()
         
     except Exception as e:
         progress_dialog.close()
         QMessageBox.critical(main_window, "错误", f"生成摘要失败: {str(e)}")
-
