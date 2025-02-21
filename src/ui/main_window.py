@@ -19,6 +19,8 @@ from src.ui.handlers.rotate_handler import rotate_handler
 from src.ui.handlers.translate_handler import translate_handler
 from src.ui.handlers.summary_handler import summary_handler
 from src.ui.handlers.llmsettings_handler import llmsettings_handler
+from src.ui.handlers.extract_text_handler import extract_text_handler
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -127,10 +129,14 @@ class MainWindow(QMainWindow):
         watermark_handler(self)
     
     def settings_llm(self):
-        llmsettings_handler(self)
+        llmsettings_handler(self)    
 
     def _summary_text(self):
         summary_handler(self)
+    
+    def _extract_text(self):
+        extract_text_handler(self)
+
 
 
 

@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QDialogButtonBox,
-    QWidget
+    QWidget,
+    QSpinBox
 )
 
 class LLMSettingsDialog(QDialog):
@@ -75,6 +76,9 @@ class LLMSettingsDialog(QDialog):
         layout.addWidget(button_box)
 
     def get_settings(self):
-        settings = super().get_settings()
+        settings = {}
+        settings["api_key"] = self.api_key_edit.text()
+        settings["base_url"] = self.base_url_edit.text()
+        settings["model"] = self.model_edit.text()
         settings["temperature"] = self.temperature_slider.value() / 100.0
         return settings
