@@ -58,8 +58,6 @@ class LLMSettingsDialog(QDialog):
         layout.addWidget(button_box)
 
     def get_settings(self):
-        return {
-            "api_key": self.api_key_edit.text(),
-            "base_url": self.base_url_edit.text(),
-            "model": self.model_edit.text()
-        }
+        settings = super().get_settings()
+        settings["temperature"] = self.temperature_slider.value() / 100.0
+        return settings
