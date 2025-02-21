@@ -43,3 +43,6 @@ class SummaryDialog(QDialog):
         
     def set_summary(self, summary_text):
         self.summary_text.setPlainText(summary_text)
+
+    def append_to_summary(self, chunk_text):
+        self.summary_text.append(chunk_text)
