@@ -9,6 +9,7 @@ import os
 from src.ui.handlers.preview_handler import update_preview
 from src.core import *
 from src.ui.menu_bar import MenuBar  # Import the update_preview function
+from llm_settings import LLMSettings
 from src.ui.handlers.encrypt_handler import encrypt_handler
 from src.ui.handlers.decrypt_handler import decrypt_handler
 from src.ui.handlers.extract_handler import extract_handler
@@ -129,7 +130,8 @@ class MainWindow(QMainWindow):
         watermark_handler(self)
     
     def settings_llm(self):
-        llmsettings_handler(self)    
+        settings = LLMSettings.load()
+        return settings
 
     def _summary_text(self):
         summary_handler(self)

@@ -24,7 +24,12 @@ def summary_handler(main_window):
     
     # Get LLM settings from main window
     llm_settings = main_window.settings_llm()
-
+    
+    # Add validation for required settings
+    if not llm_settings.get("api_key"):
+        QMessageBox.warning(main_window, "警告", "请先配置LLM API密钥")
+        return
+    
     print(f"LLM Settings: {llm_settings}")  # Debugging line to print LLM settings
 
     
