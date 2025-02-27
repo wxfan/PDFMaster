@@ -9,7 +9,7 @@ import os
 from src.ui.handlers.preview_handler import update_preview
 from src.core import *
 from src.ui.menu_bar import MenuBar  # Import the update_preview function
-from src.core.llm_settings import LLMSettings
+from src.core.summary import summary_text
 from src.ui.handlers.encrypt_handler import encrypt_handler
 from src.ui.handlers.decrypt_handler import decrypt_handler
 from src.ui.handlers.extract_handler import extract_handler
@@ -17,10 +17,9 @@ from src.ui.handlers.split_handler import split_handler
 from src.ui.handlers.watermark_handler import watermark_handler
 from src.ui.handlers.merge_handler import merge_handler
 from src.ui.handlers.rotate_handler import rotate_handler
-from src.ui.handlers.translate_handler import translate_handler
 from src.ui.handlers.summary_handler import summary_handler
-from src.ui.handlers.llmsettings_handler import llmsettings_handler
-from src.ui.handlers.extract_text_handler import extract_text_handler
+from src.ui.handlers.extract_handler import extract_handler
+from src.ui.handlers.llmsettings_handler import *
 
 
 class MainWindow(QMainWindow):
@@ -131,19 +130,18 @@ class MainWindow(QMainWindow):
     
     def settings_llm(self):   
         llmsettings_handler(self)     
-        settings = LLMSettings.load()
+        settings = get_llm_settings()
         return settings
     
     def gettings_llm(self):      
-        settings = LLMSettings.load()
+        settings = get_llm_settings()
         return settings
 
     def _summary_text(self):
         summary_handler(self)
     
     def _extract_text(self):
-        extract_text_handler(self)
-
+        extract_handler(self)
 
 
 
