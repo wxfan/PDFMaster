@@ -19,6 +19,7 @@ from src.ui.handlers.merge_handler import merge_handler
 from src.ui.handlers.rotate_handler import rotate_handler
 from src.ui.handlers.summary_handler import summary_handler
 from src.ui.handlers.extract_handler import extract_handler
+from src.ui.handlers.ocr_handler import ocr_handler
 from src.ui.handlers.llmsettings_handler import *
 
 
@@ -140,8 +141,8 @@ class MainWindow(QMainWindow):
     def _summary_text(self):
         summary_handler(self)
     
-    def _extract_text(self):
-        extract_handler(self)
+    def _ocr_text(self):
+        ocr_handler(self)
 
 
 

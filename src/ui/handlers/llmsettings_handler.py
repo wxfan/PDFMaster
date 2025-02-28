@@ -1,27 +1,12 @@
 # src/ui/llmsettings_handler.py
 from PyQt6.QtWidgets import QMessageBox, QDialog
 from src.ui.dialogs.llmsettings_dialog import LLMSettingsDialog
+from src.core.llmsetting import get_llm_settings, save_llm_settings
 from PyQt6.QtCore import Qt
 import fitz # type: ignore
 
 
 import json
-
-def save_llm_settings(settings):
-    with open('llm_settings.json', 'w') as f:
-        json.dump(settings, f)
-
-def get_llm_settings():
-    try:
-        with open('llm_settings.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {
-            "api_key": "",
-            "base_url": "",
-            "model": "",
-            "temperature": 0.7
-        }
 
 def llmsettings_handler(main_window):
     print("LLM Settings Handler called")

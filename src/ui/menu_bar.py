@@ -31,7 +31,7 @@ class MenuBar:
         # AI menu
         ai_menu = self.main_window.menuBar().addMenu("AI工具")
         ai_menu.addAction("生成摘要", self.main_window._summary_text)
-        ai_menu.addAction("提取文本",self.main_window._extract_text)
+        ai_menu.addAction("提取文本",self.main_window._ocr_text)
         ai_menu.addAction("配置LLM", self.main_window.settings_llm)  # Added LLM settings action
 
 
