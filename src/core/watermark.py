@@ -12,7 +12,7 @@ def add_watermark(
     watermark_image_path=None,
     rotation=0,  
     opacity=0.3,
-    text_fontsize=48,
+    text_fontsize=28,
     image_width=200,
     image_height=None,
 ):
@@ -25,12 +25,13 @@ def add_watermark(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+
     try:
-        doc = fitz.open(input_path)
+        doc = fitz.open(input_path)        
 
         if doc.page_count == 0:
             raise ValueError("PDF 文件为空或已损坏，请检查文件并重试")
-
+        
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
             rect = page.rect
@@ -51,7 +52,7 @@ def add_watermark(
                     watermark_text,
                     fontname="helv",
                     fontsize=text_fontsize,
-                    rotate=rotation,  # 旋转文本
+                    rotate=0,  # 旋转文本
                     color = (0.0/255, 0.0/255, 0.0/255,opacity)
                 )
 
