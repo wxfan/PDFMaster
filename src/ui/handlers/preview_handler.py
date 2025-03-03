@@ -25,9 +25,9 @@ def update_preview(file_list, preview_layout):
                 for page_num in range(len(doc)):
                     page = doc.load_page(page_num)
 
-                    # 获取页面的像素图，这里将 DPI 设置为 384 以提高清晰度
+                    # 获取页面的像素图，这里将 DPI 设置为 192 以提高清晰度
                     # 如果是96，页面有倾斜。
-                    pix = page.get_pixmap(dpi=384)
+                    pix = page.get_pixmap(dpi=192)
 
                     # 创建图片标签
                     image_label = QLabel()
